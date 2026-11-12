@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Antigravity — n8n Sistem Tuvali</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #0e1017;
+    background-image: radial-gradient(#262b3d 1.2px, transparent 1.2px);
+    background-size: 16px 16px;
+    color: #f1f5f9;
+    padding: 8px;
+    user-select: none;
+    overflow-x: hidden;
+  }
+
+  /* ÜST KONTROL PANELİ */
+  .topbar {
+    display: flex;
+    gap: 5px;
+    background: #171a26;
+    border: 1px solid #2e344d;
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 8px;
+  }
+  .tab-btn {
+    flex: 1;
+    border: 1px solid transparent;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 4px;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .tab-btn.active-cur {
+    background: linear-gradient(135deg, #ea580c, #d97706);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(234, 88, 12, 0.35);
+  }
+  .tab-btn.active-clean {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+  }
+  .play-btn {
+    background: #312e81;
+    border: 1px solid #6366f1;
+    color: #e0e7ff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 10px;
+    border-radius: 7px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .play-btn.running {
+    background: #4f46e5;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.7);
+  }
+
+  /* N8N CANVAS ALANI */
+  .canvas-box {
+    position: relative;
+    border: 1px solid #282d42;
+    border-radius: 12px;
+    padding: 8px 6px;
+    background: rgba(17, 20, 30, 0.75);
+  }
+
+  /* N8N DÜĞÜM (NODE) KUTUSU */
+  .n8n-node {
+    position: relative;
+    background: #1c2030;
+    border: 1.5px solid #353c59;
+    border-radius: 10px;
+    padding: 7px 9px;
+    cursor: pointer;
+    transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+  }
+  .n8n-node:hover, .n8n-node.selected {
+    border-color: #818cf8;
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.25);
+  }
+  .n8n-node.active-step {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.55) !important;
+    transform: scale(1.01);
+  }
+  .node-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .node-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+  .node-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .node-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #f8fafc;
+    line-height: 1.2;
+  }
+  .node-sub {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.25;
+  }
+  .file-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: #111420;
+    border: 1px solid #333a56;
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 12px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* RENK TEMALARI */
+  .node-trigger { border-left: 4px solid #10b981; }
+  .node-trigger .node-icon { background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(16, 185, 129, 0.4); }
+
+  .node-hook { border-left: 4px solid #f43f5e; border-color: rgba(244, 63, 94, 0.55); background: #231724; }
+  .node-hook .node-icon { background: rgba(244, 63, 94, 0.22); border: 1px solid rgba(244, 63, 94, 0.5); }
+
+  .node-agent { border-left: 4px solid #a855f7; border-color: rgba(168, 85, 247, 0.55); background: #1d1a30; }
+  .node-agent .node-icon { background: rgba(168, 85, 247, 0.22); border: 1px solid rgba(168, 85, 247, 0.5); }
+
+  .node-stop { border-left: 4px solid #38bdf8; }
+  .node-stop .node-icon { background: rgba(56, 189, 248, 0.18); border: 1px solid rgba(56, 189, 248, 0.4); }
+
+  /* N8N DİKEY KABLO VE AKAN VERİ NOKTASI */
+  .wire-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    position: relative;
+  }
+  .wire-line {
+    width: 2.5px;
+    height: 100%;
+    background: #4f46e5;
+    position: relative;
+  }
+  .wire-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
+    position: absolute;
+    left: -2.2px;
+    animation: flowDown 1.3s infinite linear;
+  }
+  @keyframes flowDown {
+    0% { top: 0px; opacity: 0.2; }
+    50% { opacity: 1; }
+    100% { top: 16px; opacity: 0.2; }
+  }
+  .wire-label {
+    position: absolute;
+    background: #141724;
+    border: 1px solid #2e3552;
+    border-radius: 99px;
+    padding: 1px 7px;
+    font-size: 12px;
+    color: #a5b4fc;
+    margin-left: 120px;
+    white-space: nowrap;
+  }
+
+  /* ALT BAĞLANTI PORTLARI (n8n AI Agent Altındaki Elmas Portlar) */
+  .subports-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(168, 85, 247, 0.4);
+  }
+  .sub-node {
+    background: #141724;
+    border: 1px solid #333a56;
+    border-radius: 8px;
+    padding: 5px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .sub-node:hover, .sub-node.selected {
+    border-color: #f59e0b;
+    background: #1f1d2b;
+  }
+  .sub-node.danger {
+    border-color: rgba(244, 63, 94, 0.55);
+    background: rgba(136, 19, 55, 0.22);
+  }
+  .diamond-port {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: #c084fc;
+    transform: rotate(45deg);
+    margin-right: 4px;
+  }
+  .sub-head {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    margin-bottom: 2px;
+  }
+  .sub-desc {
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.2;
+  }
+
+  /* HOOK YAN VERİ KUTULARI */
+  .hook-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed rgba(244, 63, 94, 0.4);
+  }
+
+  /* ALT DETAY / MÜFETTİŞ KUTUSU (INSPECTOR) */
+  .inspector {
+    margin-top: 8px;
+    background: #161926;
+    border: 1px solid #3b4262;
+    border-radius: 10px;
+    padding: 8px 10px;
+  }
+  .insp-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #282e46;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+  }
+  .insp-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #38bdf8;
+  }
+  .insp-body {
+    font-size: 12px;
+    color: #e2e8f0;
+    line-height: 1.4;
+  }
+  .badge-red {
+    background: rgba(244, 63, 94, 0.2);
+    border: 1px solid rgba(244, 63, 94, 0.5);
+    color: #fda4af;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .badge-green {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    color: #6ee7b7;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+  <!-- ÜST SEKMELER: ŞU ANKİ vs İLK YÜKLENEN + CANLI OYNAT -->
+  <div class="topbar">
+    <button id="btnCur" class="tab-btn active-cur" onclick="switchMode('cur')">
+      🟠 Şu Anki Sistem (9 Düğüm)
+    </button>
+    <button id="btnClean" class="tab-btn" onclick="switchMode('clean')">
+      🟢 İlk Yüklenen (2 Düğüm)
+    </button>
+    <button id="btnSim" class="play-btn" onclick="runSignal()">
+      ▶ Akışı İzle
+    </button>
+  </div>
+
+  <!-- ================= 1. ŞU ANKİ SİSTEM N8N TUVALİ ================= -->
+  <div id="canvasCur" class="canvas-box">
+
+    <!-- DÜĞÜM 1: TRIGGER -->
+    <div id="node0" class="n8n-node node-trigger" onclick="inspectNode('trigger')">
+      <div class="node-row">
+        <div class="node-left">
+          <div class="node-icon">⚡</div>
+          <div>
+            <div class="node-title">1. Chat Trigger (Mesajın)</div>
+            <div class="node-sub">Arka planda mesajı SQLite'a yazar</div>
+          </div>
+        </div>
+        <span class="file-pill">🐍 watcher.py</span>
+      </div>
+    </div>
+
+    <!-- KABLO 1 -> 2 -->
+    <div class="wire-wrap">
+      <div class="wire-line"><div class="wire-dot"></div></div>
+      <span class="wire-label">Ham mesaj</span>
+    </div>
+
+    <!-- DÜĞÜM 2: PRE-HOOK (ARAYA GİREN GİZLİ DÜĞÜM) -->
+    <div id="node1" class="n8n-node node-hook" onclick="inspectNode('hook')">
+      <div class="node-row">
+        <div class="node-left">
+          <div class="node-icon">🪝</div>
+          <div>
+            <div class="node-title">2. Pre-Hook (Araya Giren Kanca)</div>
+            <div class="node-sub">Mesajın yanına gizli emir enjekte eder!</div>
+          </div>
+        </div>
+        <span class="file-pill">🐍 agy_fast_hook.py</span>
+      </div>
+
+      <!-- Kancaya Bağlı 2 Veri Kaynağı -->
+      <div class="hook-inputs">
+        <div class="sub-node danger" onclick="event.stopPropagation(); inspectNode('anons')">
+          <div class="sub-head">📢 canli-anons.json</div>
+          <div class="sub-desc">🔴 <b>"İşi KENDİN YAPMA, Lokal Codex'e ver!"</b></div>
+        </div>
+        <div class="sub-node" onclick="event.stopPropagation(); inspectNode('hafiza')">
+          <div class="sub-head">🧠 ortak-hafiza + T2</div>
+          <div class="sub-desc">Kelime eşleşen eski kuralları pakete ekler</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KABLO 2 -> 3 -->
+    <div class="wire-wrap">
+      <div class="wire-line"><div class="wire-dot"></div></div>
+      <span class="wire-label" style="color:#fda4af; border-color:#f43f5e;">Mesaj + Gizli Anons</span>
+    </div>
+
+    <!-- DÜĞÜM 3: AI AGENT + ALT PORTLAR -->
+    <div id="node2" class="n8n-node node-agent" onclick="inspectNode('agent')">
+      <div class="node-row">
+        <div class="node-left">
+          <div class="node-icon">🤖</div>
+          <div>
+            <div class="node-title">3. AI Agent (Ana Beyin Düğümü)</div>
+            <div class="node-sub">Alttan bağlı 3 port beyni aynı anda çekiştirir:</div>
+          </div>
+        </div>
+        <span class="file-pill">🧠 Argon Medium</span>
+      </div>
+
+      <!-- n8n AI Agent Alt Elmas Portları -->
+      <div class="subports-bar">
+        <div class="sub-node danger" onclick="event.stopPropagation(); inspectNode('gemini')">
+          <div class="sub-head"><span class="diamond-port"></span>M↓ GEMINI.md</div>
+          <div class="sub-desc">🔴 <b>"Max 8 madde, kısa kes, High yasak"</b></div>
+        </div>
+        <div class="sub-node danger" onclick="event.stopPropagation(); inspectNode('science')">
+          <div class="sub-head"><span class="diamond-port"></span>🧬 47 Skill</div>
+          <div class="sub-desc">🔴 <b>31 Biyoloji (science)</b> + 6 Özel Skill</div>
+        </div>
+        <div class="sub-node" onclick="event.stopPropagation(); inspectNode('mcp')">
+          <div class="sub-head"><span class="diamond-port"></span>{} config.json</div>
+          <div class="sub-desc">3 MCP + 4 Yan Panel (3D Molekül vb.)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KABLO 3 -> 4 -->
+    <div class="wire-wrap">
+      <div class="wire-line"><div class="wire-dot"></div></div>
+      <span class="wire-label">Kırpılmış cevap</span>
+    </div>
+
+    <!-- DÜĞÜM 4: STOP HOOK & ÇIKTI -->
+    <div id="node3" class="n8n-node node-stop" onclick="inspectNode('stop')">
+      <div class="node-row">
+        <div class="node-left">
+          <div class="node-icon">🛑</div>
+          <div>
+            <div class="node-title">4. Cevap & Stop Hook (Bitiş)</div>
+            <div class="node-sub">Hata/kota kesilmesi varsa kuyruğa yazar</div>
+          </div>
+        </div>
+        <span class="file-pill">🐍 quota_wake.py</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ================= 2. İLK YÜKLENEN SAF N8N TUVALİ ================= -->
+  <div id="canvasClean" class="canvas-box hidden">
+
+    <div class="n8n-node node-trigger" onclick="inspectNode('clean_trigger')">
+      <div class="node-row">
+        <div class="node-left">
+          <div class="node-icon">⚡</div>
+          <div>
+            <div class="node-title">1. Chat Trigger (Mesajın)</div>
+            <div class="node-sub">Arka plan izleyicisi yok, sıfır gecikme</div>
+          </div>
+        </div>
+        <span class="badge-green">0 Engel</span>
+      </div>
+    </div>
+
+    <div class="wire-wrap" style="height: 34px;">
+      <div class="wire-line" style="background:#10b981;"><div class="wire-dot" style="background:#6ee7b7;"></div></div>
+      <span class="wire-label" style="color:#6ee7b7; border-color:#10b981;">Arada Pre-Hook Düğümü YOK!</span>
+    </div>
+
+    <div class="n8n-node node-trigger" style="border-color:#10b981;" onclick="inspectNode('clean_agent')">
+      <div class="node-row">
+        <div class="node-left">
+          <div class="node-icon">🤖</div>
+          <div>
+            <div class="node-title">2. Saf AI Agent (Tek Odaklı Beyin)</div>
+            <div class="node-sub">İşi bizzat kendi yapar, özet geçmez</div>
+          </div>
+        </div>
+        <span class="file-pill">{} settings.json</span>
+      </div>
+
+      <div class="subports-bar" style="border-top-color: rgba(16, 185, 129, 0.35);">
+        <div class="sub-node">
+          <div class="sub-head">📜 Kurallar</div>
+          <div class="sub-desc" style="color:#6ee7b7;"><b>YOK</b> (Kısa yaz sınırı yok)</div>
+        </div>
+        <div class="sub-node">
+          <div class="sub-head">🛠️ Araçlar</div>
+          <div class="sub-desc" style="color:#6ee7b7;"><b>Sadece 7 temel</b> (Biyoloji yok)</div>
+        </div>
+        <div class="sub-node">
+          <div class="sub-head">📢 Gizli Anons</div>
+          <div class="sub-desc" style="color:#6ee7b7;"><b>YOK</b> ("Codex'e ver" demez)</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALT MÜFETTİŞ KUTUSU (HERHANGİ BİR DÜĞÜME DOKUNUNCA DETAYINI GÖSTERİR) -->
+  <div class="inspector">
+    <div class="insp-head">
+      <span id="inspTitle" class="insp-title">👆 Kutulara dokunarak içini gör (Şu an: Genel Teşhis)</span>
+      <span id="inspBadge" class="badge-red">3 Fren Aktif</span>
+    </div>
+    <div id="inspBody" class="insp-body">
+      <b>Neden eskisi gibi çalışmıyor?</b> Mesajın <b>3. AI Agent</b> düğümüne gitmeden önce <b>2. Pre-Hook (agy_fast_hook.py)</b> araya girip <i>"ameleliği kendin yapma Codex'e ver"</i> diyor; alttan bağlı <b>31 Biyoloji aracı</b> ve <b>GEMINI.md ("kısa yaz")</b> kuralı da beyni kısıtlıyor.
+    </div>
+  </div>
+
+<script>
+  const details = {
+    trigger: {
+      title: "⚡ DÜĞÜM 1: watcher.py + messages.sqlite3",
+      badge: "Arka Plan",
+      isRed: false,
+      body: "<b>Dosya:</b> <code>.gemini/user-message-logger/watcher.py</code><br>Sen mesaj yazdığında arka planda yakalayıp <code>messages.sqlite3</code> ve <code>kullanici-mesajlarim.txt</code> içine kaydeder."
+    },
+    hook: {
+      title: "🪝 DÜĞÜM 2: hooks.json ➔ agy_fast_hook.py",
+      badge: "Araya Giriyor!",
+      isRed: true,
+      body: "<b>Dosya:</b> <code>.gemini/config/hooks.json</code> ➔ <code>agy_fast_hook.py</code><br>Model senin mesajını görmeden saliseler önce çalışır ve paketin içine <code>canli-anons.json</code> metnini gizlice ekler."
+    },
+    anons: {
+      title: "📢 FREN 1: canli-anons.json",
+      badge: "Ana Yavaşlatıcı",
+      isRed: true,
+      body: "<b>Dosya:</b> <code>.gemini/user-message-logger/canli-anons.json</code><br>Her yeni mesajda modele şunu emreder: <i>'Haftalık kotayı koru! Toplu kod yazma, log okuma ve deneme-yanılma işlerini KENDİN YAPMA, Lokal Codex'e yaptır!'</i> Bu yüzden yapay zeka işi bizzat yapmak yerine üstünden atıyor."
+    },
+    hafiza: {
+      title: "🧠 ortak-hafiza.md + T2-ogrenilen-dersler.jsonl",
+      badge: "Hafıza Enjeksiyonu",
+      isRed: false,
+      body: "Mesajındaki kelimeleri tarayıp eşleşen eski ders notlarını otomatik olarak mesajın altına yapıştırır."
+    },
+    agent: {
+      title: "🤖 DÜĞÜM 3: AI Agent (Gemini 4 Argon Medium)",
+      badge: "Baskı Altında",
+      isRed: true,
+      body: "Model senin isteğini yapmak ister ama hem üstten gelen <b>'kendin yapma Codex'e ver'</b> anonsu, hem alttan bağlı <b>'8 maddeyi geçme'</b> kuralı, hem de <b>31 biyoloji aracı</b> aynı anda beyni böler."
+    },
+    gemini: {
+      title: "📜 FREN 2: .gemini/GEMINI.md",
+      badge: "Kısıtlama",
+      isRed: true,
+      body: "<b>Dosya:</b> <code>C:\\Users\\Mel\\.gemini\\GEMINI.md</code><br>İçinde <i>'İlk satır Kısacası + en fazla ~8 kısa madde, paragraf 1-3 cümle'</i> ve <i>'Argon High açılmaz, Medium yeterlidir'</i> kuralları yazılıdır. Bu yüzden model detayları kırpıp kısa keser."
+    },
+    science: {
+      title: "🧬 FREN 3: science Eklentisi (31 Biyoloji Aracı)",
+      badge: "Dikkat Dağıtıcı",
+      isRed: true,
+      body: "<b>Dosya:</b> <code>.gemini/config/plugins/science/plugin.json</code><br>Sen biyoloji/genetik çalışmadığın halde her mesajda modele <b>AlphaFold, ClinVar, gnomAD, PyMOL, ChEMBL</b> gibi 31 dev biyoloji aracı ve molekül kuralı yükleniyor!"
+    },
+    mcp: {
+      title: "{} config.json + mcp_config.json",
+      badge: "Yan Paneller",
+      isRed: false,
+      body: "Playwright, BrowserMCP, Supabase sunucuları ve 4 yan panel (Swarm Board, Device Hub, Compose Preview, 3D Molecule Viewer) bağlıdır."
+    },
+    stop: {
+      title: "🛑 DÜĞÜM 4: quota_wake_policy.py",
+      badge: "Bitiş Kancası",
+      isRed: false,
+      body: "<b>Dosya:</b> <code>.gemini/user-message-logger/quota_wake_policy.py</code><br>Cevap bittiğinde çalışır; eğer sohbet kotadan veya hatadan yarım kaldıysa <code>kota_bekleyen_sohbetler.json</code> kuyruğuna ekler."
+    },
+    clean_trigger: {
+      title: "⚡ İlk Yüklenen Trigger",
+      badge: "Saf Akış",
+      isRed: false,
+      body: "Mesajın hiçbir Python kancasına (hook) uğramadan doğrudan modele gider."
+    },
+    clean_agent: {
+      title: "🤖 İlk Yüklenen Saf AI Agent",
+      badge: "Tam Performans",
+      isRed: false,
+      body: "Üstünde <i>'kısa yaz'</i>, <i>'Codex'e devret'</i> veya <i>'31 biyoloji aracı'</i> yükü yoktur; tüm dikkatini sadece senin verdiğin işe harcar."
+    }
+  };
+
+  function inspectNode(key) {
+    const d = details[key];
+    if (!d) return;
+    document.getElementById('inspTitle').innerText = d.title;
+    const b = document.getElementById('inspBadge');
+    b.innerText = d.badge;
+    b.className = d.isRed ? 'badge-red' : 'badge-green';
+    document.getElementById('inspBody').innerHTML = d.body;
+  }
+
+  function switchMode(m) {
+    const isCur = m === 'cur';
+    document.getElementById('canvasCur').classList.toggle('hidden', !isCur);
+    document.getElementById('canvasClean').classList.toggle('hidden', isCur);
+    document.getElementById('btnCur').className = isCur ? 'tab-btn active-cur' : 'tab-btn';
+    document.getElementById('btnClean').className = !isCur ? 'tab-btn active-clean' : 'tab-btn';
+    if (isCur) {
+      inspectNode('anons');
+    } else {
+      inspectNode('clean_agent');
+    }
+  }
+
+  let simTimer = null;
+  function runSignal() {
+    switchMode('cur');
+    const keys = ['trigger', 'hook', 'agent', 'stop'];
+    let i = 0;
+    const btn = document.getElementById('btnSim');
+    if (simTimer) {
+      clearInterval(simTimer);
+      simTimer = null;
+      btn.classList.remove('running');
+      btn.innerText = '▶ Akışı İzle';
+      [0,1,2,3].forEach(n => document.getElementById('node'+n).classList.remove('active-step'));
+      return;
+    }
+    btn.classList.add('running');
+    btn.innerText = '⏹ Durdur';
+    function step() {
+      [0,1,2,3].forEach(n => document.getElementById('node'+n).classList.remove('active-step'));
+      document.getElementById('node'+i).classList.add('active-step');
+      inspectNode(keys[i]);
+      i = (i + 1) % 4;
+    }
+    step();
+    simTimer = setInterval(step, 2200);
+  }
+</script>
+</body>
+</html>

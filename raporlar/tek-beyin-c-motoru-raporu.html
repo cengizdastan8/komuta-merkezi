@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tek Beyin Native C Motoru &amp; Karar Paketi</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  :root { --bg:#0b0f19; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#38bdf8; --border:#1f2937; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; line-height:1.65; }
+  .wrap { max-width:860px; margin:0 auto; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .top-nav { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; background:#1e293b; color:var(--accent); text-decoration:none; font-weight:600; font-size:14px; border:1px solid #334155; }
+  h1,h2,h3 { color:#f8fafc; line-height:1.3; }
+  a { color:var(--accent); word-break:break-all; }
+  pre { background:#020617; padding:12px; border-radius:8px; overflow-x:auto; border:1px solid var(--border); font-size:13px; }
+  code { background:#1e293b; padding:2px 5px; border-radius:4px; font-size:13px; }
+  pre code { background:transparent; padding:0; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; display:block; overflow-x:auto; }
+  th,td { border:1px solid var(--border); padding:8px 10px; text-align:left; font-size:14px; }
+  th { background:#1e293b; }
+  blockquote { margin:12px 0; padding:10px 14px; border-left:4px solid var(--accent); background:#0f172a; border-radius:6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top-nav">
+    <a class="btn" href="../index.html">⬅️ Mobil Vitrin Ana Sayfa</a>
+    <a class="btn" href="../canli-takip-merkezi.html">📡 Canlı Takip Merkezi</a>
+  </div>
+  <div id="content"></div>
+  <textarea id="raw-md" style="display:none;"># Turn 5 — karar, hazır paket ve salt okunur teşhis
+
+Kapanış: 2026-11-08T12:03:50.028866+00:00. Üretimde apply yapılmadı. Bu kapanışta yeni özellik eklenmedi, süreç kapatılmadı.
+
+## Karar ve aşamalar
+
+Karar: **küçük C# istemci + tek yaşayan okuyucu**. Bunlar birbirini tamamlar: istemci hook sürecinin taşıyıcısı, servis FTS okuyucusudur. Ancak yeni ölçümde C# her çağrıda açılma maliyeti p95&lt;80 ms hedefini karşılamadı. Read geçişi hazır/onaylanmış ilan edilmiyor. **KADEMELİ Stop-önce** seçildi; bu, veri yakalamayı okuma entegrasyonu ve servis riskinden ayırır. Read ancak gerçek host kabulü, erişim sınırı, servis ömrü/yeniden başlatma ve gecikme kabulü kanıtlanınca açılır.
+
+Mevcut memory-service başka bir süreç/başlangıç yolu sağlayabilir; ilgili kanca Node çağrısı yapıyor. Pilot için uygun hazır endpoint ve iki ajanın native çıktı sözleşmesi doğrulanmadığından bu turda oraya entegrasyon seçilmedi. Yeni ayrı servisin bedeli aşağıdaki RAM ölçümüdür; mevcut servise taşımak otomatik olarak bu maliyeti sıfırlamaz.
+
+İnternet kanıtı → karar: [Microsoft NamedPipeServerStream](https://learn.microsoft.com/en-us/dotnet/api/system.io.pipes.namedpipeserverstream) eşzamanlı bağlantı/stream yapısını destekler; bu bilgiye dayanarak boş bir istemcinin ikinci ajanı bloke etmemesi ayrıca pilotta sınandı. [Microsoft pagefile açıklaması](https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/introduction-to-the-page-file) commit sınırını ve pagefile rolünü açıklar; pagefile kullanımı tek başına gecikme nedeni sayılmadı. [SQLite backup API](https://www.sqlite.org/c3ref/backup_finish.html) canlı DB yedeklemesini tanımlar; config kopyası geri alma testi tüm veri backup/restore kabulüne dönüştürülmedi.
+
+## Okuyucu ölçümü ve sınırlar
+
+30 tekrar, nearest-rank, p99=max. Soğuk C# satırları süreç oluşturma + stdin JSON → stdout JSON; servis önceden açılmıştır. İki ajan satırları yaşayan stdin köprüleriyle eşzamanlıdır. OS cache boşaltılmadı.
+
+| Yol | Alan/ajan | p50 ms | p95 ms | p99 ms | max ms |
+|---|---|---:|---:|---:|---:|
+| C# yeni süreç | mobil | 138.367 | 187.631 | 197.875 | 197.875 |
+| C# yeni süreç | oyun | 133.398 | 151.96 | 162.214 | 162.214 |
+| C# yeni süreç | web-3d | 129.289 | 141.894 | 151.195 | 151.195 |
+| İki eşzamanlı yaşayan köprü | agy | 5.16 | 5.66 | 5.796 | 5.796 |
+| İki eşzamanlı yaşayan köprü | codex | 5.181 | 5.642 | 5.808 | 5.808 |
+
+Servis çalışma kümesi 158.2 MiB, private commit 13.4 MiB, tepe çalışma kümesi 159.1 MiB. Mapped snapshot sayfaları çalışma kümesine dahildir; private ile toplanmaz. Ölçüm sonlu bir pilot yüküne aittir, uzun süreli sızıntı kabulü değildir.
+
+C# v2 için önceki snapshot eksiği pilotta giderildi: bağlantı/okuma hatasında Python fallback_once.py ile hash doğrulanmış LAST_GOOD açılır. Hata görünürdür, bilgi yok diye saklanmaz. Fallback yavaş olabilir ve Python runtime bağımlılığı sürer. Bozuk LAST_GOOD da görünür hata verir.
+
+- agy: servis yokken 774.7 ms; valid JSON=True, kart var=True, LAST_GOOD etiketi=True.
+- codex: servis yokken 832.9 ms; valid JSON=True, kart var=True, LAST_GOOD etiketi=True.
+
+Boş bağlı istemci varken diğer ajan 262.4 ms&#x27;de yanıt aldı. Manuel pilot yeniden başlatma kontrolü=True. Bu, Windows oturum açılışı, crash-loop recovery, gerçek SCM/zamanlanmış görev veya üretim hostu kabulü değildir. Servis erişim sınırı/auth ve başlangıç yaşam döngüsü tamamlanmadı.
+
+## Staged paket ve onay sonrası komutlar
+
+`C:\Users\Mel\Documents\Antigravity\Tek-Beyin-Cekirdek\staged`. Stop fazı hazır; Read JSON dosyaları adaydır ve apply `READ_GATE_CLOSED` ile reddeder. Yalnız iki üretim config hedefi: `C:\Users\Mel\.codex\hooks.json` ve `C:\Users\Mel\.gemini\config\hooks.json`. guard.py, agy_fast_hook.py, SatırLimanı veya servis başlangıç ayarı bu aşamada değişmez.
+
+Apply: başlangıç ve staged JSON hash denetimi → iki dosyanın byte yedeği/hash manifesti → yedek dizininde git commit → dosyaları yazma → JSON parse ve izole hook fixture duman testi. İki yazma arası hata iki config’i geri alır. Duman testi gerçek AGY/Codex hostunu veya eski kanca komutlarını çalıştırmaz.
+
+Kopyalar üzerindeki gerçek PowerShell dry-run: 7/7 kontrol geçti. İdempotence, byte-identical rollback, arada hata/otomatik rollback, drift reddi ve Read kapısı test edildi. Üretim before/after aynı=True.
+
+| Üretim config | Önce SHA-256 | Sonra SHA-256 |
+|---|---|---|
+| codex | 191982b12ac428f8889564f52f01ab7b20938c9f0c7b7f67a37e05a30c86d9c3 | 191982b12ac428f8889564f52f01ab7b20938c9f0c7b7f67a37e05a30c86d9c3 |
+| agy | 550053ae5fb68e0d021d178bad3f065fe21efd1c14f733133a4a387591759143 | 550053ae5fb68e0d021d178bad3f065fe21efd1c14f733133a4a387591759143 |
+
+**Yalnız Mel onayından sonra**, bu turda çalıştırılmayan Stop komutu:
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File &#x27;C:\Users\Mel\Documents\Antigravity\Tek-Beyin-Cekirdek\staged\apply.ps1&#x27; -Production -Phase Stop
+```
+Geri alma (apply çıktısındaki gerçek receipt yoluyla):
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File &#x27;C:\Users\Mel\Documents\Antigravity\Tek-Beyin-Cekirdek\staged\rollback.ps1&#x27; -Production -Receipt &#x27;&lt;apply çıktısındaki receipt.json&gt;&#x27;
+```
+Read için bugün çalışır bir üretim apply komutu önerilmiyor; kapı bilinçli kapalıdır. Bu nedenle bütün Read geçişinin yalnız onay beklediği iddia edilmiyor.
+
+## AGY yavaşlığı: gözlem ve çıkarım
+
+Mevcut snapshot: toplam 15.81 GiB, kullanılabilir 1.83 GiB. Sanal bellek kullanım oranı yaklaşık %83.2. Pagefile ve kısa performans örnekleri aşağıdadır; karşılaştırmalar aynı zaman aralığında kullanıcı yükü ve gözlem araçlarından etkilenebilir.
+
+```json
+{
+  &quot;pagefile&quot;: {
+    &quot;Name&quot;: &quot;C:\\pagefile.sys&quot;,
+    &quot;AllocatedBaseSize&quot;: 16384,
+    &quot;CurrentUsage&quot;: 3664,
+    &quot;PeakUsage&quot;: 8135
+  },
+  &quot;paging_samples&quot;: [
+    {
+      &quot;AvailableMBytes&quot;: 1865,
+      &quot;CommittedBytes&quot;: 28428922880,
+      &quot;CommitLimit&quot;: 34155663360,
+      &quot;PagesInputPersec&quot;: 856,
+      &quot;PagesOutputPersec&quot;: 0,
+      &quot;PageReadsPersec&quot;: 856
+    },
+    {
+      &quot;AvailableMBytes&quot;: 1854,
+      &quot;CommittedBytes&quot;: 28477321216,
+      &quot;CommitLimit&quot;: 34155663360,
+      &quot;PagesInputPersec&quot;: 2805,
+      &quot;PagesOutputPersec&quot;: 0,
+      &quot;PageReadsPersec&quot;: 2805
+    },
+    {
+      &quot;AvailableMBytes&quot;: 1859,
+      &quot;CommittedBytes&quot;: 28477480960,
+      &quot;CommitLimit&quot;: 34155663360,
+      &quot;PagesInputPersec&quot;: 1011,
+      &quot;PagesOutputPersec&quot;: 0,
+      &quot;PageReadsPersec&quot;: 973
+    }
+  ],
+  &quot;process_activity&quot;: [
+    {
+      &quot;Name&quot;: &quot;MsMpEng&quot;,
+      &quot;IDProcess&quot;: 6248,
+      &quot;PercentProcessorTime&quot;: 0,
+      &quot;IODataBytesPersec&quot;: 0,
+      &quot;WorkingSetPrivate&quot;: 307961856
+    },
+    {
+      &quot;Name&quot;: &quot;language_server&quot;,
+      &quot;IDProcess&quot;: 26796,
+      &quot;PercentProcessorTime&quot;: 0,
+      &quot;IODataBytesPersec&quot;: 0,
+      &quot;WorkingSetPrivate&quot;: 1414873088
+    }
+  ]
+}
+```
+
+| Süreç | PID | Çalışma kümesi MiB | Private MiB |
+|---|---:|---:|---:|
+| language_server | 26796 | 1418.7 | 1825.9 |
+| ChatGPT | 12688 | 460.5 | 701.2 |
+| MsMpEng | 6248 | 428.3 | 527.3 |
+| Antigravity | 12676 | 363.6 | 535.3 |
+| ChatGPT | 38652 | 299.9 | 466.2 |
+| brave | 44180 | 276.7 | 357.1 |
+| brave | 17368 | 276.6 | 383.4 |
+| brave | 31896 | 269.5 | 340.9 |
+| brave | 15668 | 253.7 | 310.7 |
+| Memory Compression | 3216 | 240.9 | 7.0 |
+| brave | 19936 | 239.6 | 292.5 |
+| ChatGPT | 2484 | 226.9 | 337.1 |
+| brave | 1120 | 220.9 | 298.3 |
+| codex | 53280 | 220.6 | 144.5 |
+| DeepSeek Harness | 36520 | 215.3 | 266.6 |
+
+Bellek baskısı ve diskten sayfa okuma gözleniyor. PagesInput/reads tümü pagefile değildir; mmap dosya okumalarını da içerebilir. Süreç CPU alanı birikimli CPU süresidir, anlık CPU yüzdesi değildir. Defender açık ve bellekte; aktif taramanın AGY gecikmesine nedensel katkısı ETW/Defender performans kaydı olmadan kanıtlanmadı.
+
+Brain boyutları yalnız dosya/artifact toplamıdır; modelin gerçek aktif token bağlamı veya ağ istek boyutu değildir:
+
+| Brain dizini | MiB | Dosya |
+|---|---:|---:|
+| 642dd3dd-eb7e-4be1-9f49-ce008d6d0cd0 | 152.07 | 418 |
+| eabaad3e-7480-4905-a735-4ca328e07219 | 58.37 | 194 |
+| 5bd2d2fd-b8ca-4071-a75c-68caa80e7bfd | 53.41 | 1104 |
+| 0cfb8769-08c5-4735-a03f-2eb4f1082c5d | 46.65 | 948 |
+| 3c1c63d0-b268-4470-afc6-b25ff4573d33 | 32.61 | 930 |
+| f1a12c31-a33a-4174-8d87-bac189a3240e | 21.28 | 517 |
+| 91397265-69e2-40d6-bb66-b028db760d9e | 13.51 | 72 |
+| 71fb5c12-26e6-4ef7-9f0f-a32fcffda4dd | 7.95 | 253 |
+| ad85cf3a-be06-4025-b89a-18c817ed63f6 | 6.91 | 149 |
+| 833300fc-c5ec-4991-aff0-209af75e4f01 | 6.87 | 81 |
+
+Bilinen global AGY zinciri tek enabled PreInvocation agy_fast_hook içeriyor. Önceki Turn5&#x27;te gerçek komut, taze Python ve stdin→parse JSON ile 30 tekrar: p50=85.375, p95=107.005, p99=max=107.667 ms. Ham 30 örnek JSON&#x27;a korundu; bu kapanışta yeniden çalıştırılmadı. Eski 63 ms sabit sayı değil. Yaklaşık 0,1 sn ek yük saniyelerlik tüm beklemeyi açıklamaz; plugin/workspace hook’ları, scheduler, ağ/model zamanı ölçülmedi.
+
+## Mel için güvenli öneriler — uygulanmadı
+
+- Save work, then manually close unused duplicate ChatGPT windows and unused browser tabs; no process was closed by this task
+- Preserve current long conversation; hand over compact context into a linked new conversation and compare time-to-first-response
+- Keep system-managed pagefile; do not disable Defender or delete transcripts
+- If repeated stall coincides with Defender IO, collect authorized short performance trace first; do not broadly exclude profile, repos or transcript archives
+- After evidence of trusted generated-file scanning, consider narrow build-output exclusion only with security tradeoff review; not applied
+- Do not add autostart reader until lifecycle and real host acceptance pass
+
+## Kanıtlanmayanlar ve kapanış
+
+İki gerçek yeni sohbette otomatik hatırlama, gerçek AGY Stop makbuzu, Windows okuyucu otomatik başlatma/recovery, uzun süreli RAM davranışı, veri arşivinin bağımsız backup/restore tatbikatı ve AGY yavaşlığının tek kesin kök nedeni kanıtlanmadı. İzin sorusu açılmadı; üretim apply yapılmadı.
+
+İsteğin: salt okunur küçük adımlarla teşhis JSON’u ve tam karar raporu yazılsın. Sonuç: RAM/pagefile/süreç/Defender/brain ayrı toplanıp evidence/turn5-diagnostic.json dosyasına birleştirildi; mevcut hook ham ölçümü korundu. İsteğin: üretim/süreçlere müdahale edilmesin. Sonuç: ayar değiştirme, süreç kapatma, yeni özellik veya üretim apply yapılmadı. Paket çalışması önceki makbuzdan okunmuştur.
+</textarea>
+</div>
+<script>
+  const raw = document.getElementById('raw-md').value;
+  if (window.marked) {
+    document.getElementById('content').innerHTML = marked.parse(raw);
+  } else {
+    const pre = document.createElement('pre');
+    pre.textContent = raw;
+    document.getElementById('content').appendChild(pre);
+  }
+</script>
+</body>
+</html>

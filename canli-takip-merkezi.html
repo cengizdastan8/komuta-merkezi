@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MEL • Canlı Takip ve Komuta Merkezi (AGY + Lokal Codex Radarı)</title>
+  <!-- İlk yüklemede file:// üzerinden bile anında açılması için statik/canlı veri enjeksiyonu -->
+  <script src="canli_veri.js"></script>
+  <style>
+    :root {
+      --bg-0: #060913;
+      --bg-1: #0c1224;
+      --bg-2: rgba(16, 24, 48, 0.78);
+      --bg-card: rgba(14, 21, 42, 0.85);
+      --border: rgba(56, 189, 248, 0.22);
+      --border-strong: rgba(56, 189, 248, 0.48);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --purple: #a855f7;
+      --rose: #f43f5e;
+      --blue: #3b82f6;
+      --shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 15% 10%, #0f1b3d 0%, var(--bg-0) 55%, #04060d 100%);
+      color: var(--text);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Üst Komuta Barı */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(6, 10, 22, 0.90);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 22px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .radar-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 14px var(--emerald);
+      animation: pulse-green 1.6s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.75); }
+      70% { transform: scale(1.08); box-shadow: 0 0 0 11px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8, #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .telemetry-pills {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #e2e8f0;
+    }
+
+    .pill strong {
+      color: var(--cyan);
+      font-weight: 800;
+    }
+
+    .pill.mode-ok {
+      border-color: rgba(16, 185, 129, 0.45);
+      color: #a7f3d0;
+    }
+
+    .container {
+      max-width: 1620px;
+      margin: 0 auto;
+      padding: 18px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Özet Metrik Kartları */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--cyan), var(--purple));
+    }
+
+    .kpi-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .kpi-val {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .kpi-sub {
+      font-size: 0.76rem;
+      color: #38bdf8;
+      margin-top: 3px;
+    }
+
+    /* Bölüm Başlıkları */
+    .section-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .section-title {
+      font-size: 1.08rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #f8fafc;
+    }
+
+    .section-badge {
+      font-size: 0.72rem;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--cyan);
+      font-weight: 700;
+    }
+
+    /* BÖLÜM 1: Radar + Canlı Akış İkili Grid */
+    .top-split {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 1120px) {
+      .top-split {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .radar-wrap {
+      position: relative;
+      width: 100%;
+      height: 510px;
+      background: radial-gradient(circle at center, rgba(16, 38, 74, 0.65) 0%, rgba(7, 11, 24, 0.95) 75%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    #radar-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .radar-legend {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(6, 10, 22, 0.84);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      pointer-events: none;
+    }
+
+    .legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    /* BÖLÜM 3: Canlı Eylem Akışı (Live Stream) */
+    .stream-list {
+      height: 510px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      padding-right: 6px;
+    }
+
+    .stream-item {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-left: 3px solid var(--cyan);
+      border-radius: 10px;
+      padding: 10px 12px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .stream-item:hover {
+      border-color: var(--border-strong);
+      transform: translateX(2px);
+    }
+
+    .stream-item.kind-CODEX { border-left-color: var(--purple); }
+    .stream-item.kind-BAŞKOMUTAN { border-left-color: var(--emerald); }
+    .stream-item.kind-ALT { border-left-color: var(--cyan); }
+
+    .stream-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .agent-tag {
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 2px 7px;
+      border-radius: 5px;
+    }
+
+    .tool-tag {
+      font-family: Consolas, monospace;
+      font-size: 0.71rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(168, 85, 247, 0.16);
+      color: #d8b4fe;
+    }
+
+    .stream-desc {
+      font-size: 0.84rem;
+      color: #f1f5f9;
+      word-break: break-word;
+    }
+
+    .stream-links {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .mini-link {
+      font-size: 0.72rem;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 5px;
+      text-decoration: none;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mini-link:hover {
+      background: rgba(16, 185, 129, 0.25);
+    }
+
+    /* BÖLÜM 2: 5 Büyük Üretim Cephesi */
+    .fronts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 14px;
+    }
+
+    .front-card {
+      background: rgba(15, 23, 42, 0.82);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 13px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 11px;
+    }
+
+    .front-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .front-no {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      white-space: nowrap;
+    }
+
+    .status-badge {
+      font-size: 0.71rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+
+    .status-CALISIYOR {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+
+    .status-BEKLIYOR {
+      background: rgba(245, 158, 11, 0.16);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .status-TAMAMLANDI {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .front-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .front-sub {
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .progress-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #cbd5e1;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(30, 41, 59, 0.9);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #10b981);
+      border-radius: 999px;
+      transition: width 0.5s ease;
+    }
+
+    .front-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .f-metric {
+      background: rgba(6, 10, 22, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+
+    .f-metric-lbl {
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+
+    .f-metric-val {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #e2e8f0;
+    }
+
+    .front-act {
+      font-size: 0.76rem;
+      color: #93c5fd;
+      background: rgba(30, 58, 138, 0.22);
+      border-left: 2px solid #38bdf8;
+      padding: 6px 8px;
+      border-radius: 6px;
+      word-break: break-word;
+    }
+
+    /* BÖLÜM 4: Tüm Açık/Son Sohbetler (AGY + Codex) Röntgen Tablosu */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .filter-btn {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--cyan);
+      color: #fff;
+    }
+
+    .search-input {
+      background: rgba(6, 10, 22, 0.85);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      min-width: 240px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    th {
+      font-size: 0.73rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      background: rgba(6, 10, 22, 0.55);
+    }
+
+    tr.conv-row {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    tr.conv-row:hover {
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .mono-id {
+      font-family: Consolas, monospace;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    /* İnteraktif Çekmece (Drawer) */
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 6, 14, 0.72);
+      backdrop-filter: blur(5px);
+      z-index: 200;
+      display: none;
+      justify-content: flex-end;
+    }
+
+    .drawer-backdrop.open {
+      display: flex;
+    }
+
+    .drawer {
+      width: min(740px, 95vw);
+      height: 100vh;
+      background: #090f20;
+      border-left: 1px solid var(--border-strong);
+      padding: 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: -15px 0 45px rgba(0, 0, 0, 0.75);
+    }
+
+    .drawer-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .close-btn {
+      background: rgba(244, 63, 94, 0.18);
+      border: 1px solid rgba(244, 63, 94, 0.45);
+      color: #fda4af;
+      padding: 6px 13px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .drawer-block {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 12px;
+      padding: 13px;
+    }
+
+    .drawer-block h4 {
+      font-size: 0.84rem;
+      color: var(--cyan);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .msg-bubble {
+      padding: 8px 11px;
+      border-radius: 8px;
+      margin-bottom: 7px;
+      font-size: 0.82rem;
+      background: rgba(6, 10, 22, 0.8);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .msg-bubble.role-MEL {
+      border-left-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    /* YENİ: Baş Denetçi Paneli, Bitmiş İşler Vitrini & 4 Konu Kümesi Haritası */
+    .supervisor-bar {
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.42), rgba(15, 23, 42, 0.92));
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      border-radius: 15px;
+      padding: 15px 18px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .sup-checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .sup-check-pill {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #a7f3d0;
+    }
+
+    .vitrin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 14px;
+    }
+
+    .vitrin-card {
+      background: linear-gradient(160deg, rgba(15, 23, 42, 0.92), rgba(9, 14, 28, 0.95));
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      border-top: 3px solid var(--emerald);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+
+    .vitrin-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--emerald);
+    }
+
+    .vitrin-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #6ee7b7;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+
+    .vitrin-cta:hover {
+      background: rgba(16, 185, 129, 0.35);
+      color: #fff;
+    }
+
+    .clusters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+    }
+
+    .cluster-card {
+      background: rgba(13, 20, 38, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-left: 4px solid var(--cyan);
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-chip {
+      font-family: Consolas, monospace;
+      font-size: 0.73rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #7dd3fc;
+      cursor: pointer;
+    }
+
+    .chat-chip:hover {
+      background: rgba(56, 189, 248, 0.28);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ÜST BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="radar-dot" id="live-dot"></div>
+      <div>
+        <div class="brand-title">ANTIGRAVITY &amp; LOKAL CODEX — CANLI TAKİP VE KOMUTA MERKEZİ</div>
+        <div class="brand-sub">Saniye Saniye Canlı Ajan Radarı • 5 Üretim Cephesi • Çift Modlu Sıfır-Yük Telemetri (HTTP 18888 + file:// canli_veri.js)</div>
+      </div>
+    </div>
+    <div class="telemetry-pills">
+      <span class="pill mode-ok" id="conn-mode-pill">📡 Bağlantı: Doğrulanıyor...</span>
+      <span class="pill">⏱️ Son Güncelleme: <strong id="last-upd-time">--:--:--</strong></span>
+      <span class="pill">⚡ Tarama Hızı: <strong id="scan-ms-val">0 ms</strong></span>
+      <button class="filter-btn" onclick="forceRefreshNow()">🔄 Şimdi Yenile</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- ÖZET KPI KARTLARI -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Aktif Çalışan AGY &amp; Alt Ajan</div>
+        <div class="kpi-val"><span id="kpi-active-agy">0</span> <small style="font-size:0.85rem;color:#34d399;" id="kpi-sub-agy">(0 Alt Ajan)</small></div>
+        <div class="kpi-sub" id="kpi-total-agy">Toplam 0 son sohbet taranıyor</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Lokal Codex (6.1 Sol Yüksek/Ultra)</div>
+        <div class="kpi-val"><span id="kpi-active-codex">0</span> <small style="font-size:0.85rem;color:#c084fc;">Canlı Oturum</small></div>
+        <div class="kpi-sub" id="kpi-total-codex">state_5.sqlite (?mode=ro) + Canlı Köprü</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">5 Büyük Üretim Cephesi Ortalaması</div>
+        <div class="kpi-val"><span id="kpi-front-pct">%0</span></div>
+        <div class="kpi-sub">APK • 33 Quant Bot • Tek Beyin C • Bulut Ordu</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Üretilen Dosya &amp; Araştırılan Link</div>
+        <div class="kpi-val"><span id="kpi-files-cnt">0</span> <small style="font-size:0.85rem;color:#38bdf8;" id="kpi-urls-cnt">/ 0 https:// link</small></div>
+        <div class="kpi-sub">Son oturumlarda yakalanan canlı kanıtlar</div>
+      </div>
+    </section>
+
+    <!-- YENİ 0: BAŞ DENETÇİ MÜFETTİŞ AJAN (SUPERVISOR) & İCRACI AJAN CANLI DENETİM PANELİ -->
+    <section class="supervisor-bar" id="supervisor-audit-box">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="status-badge status-CALISIYOR">🛡️ BAŞ DENETÇİ MÜFETTİŞ AJAN (5a156f2d)</span>
+          <span class="section-badge">⚙️ İCRACI &amp; BİRLEŞTİRİCİ AJAN (bcc89456)</span>
+          <span class="section-badge" style="border-color:#10b981;color:#6ee7b7;">👑 BAŞKOMUTAN (81e8d6df &amp; b78c1bfe)</span>
+        </div>
+        <div style="font-size:0.86rem;color:#e2e8f0;margin-top:6px;" id="sup-audit-note">
+          Canlı kalite kontrolü ve tüm bitmiş teslimatların doğrulaması aktif...
+        </div>
+        <div class="sup-checks" id="sup-checks-list"></div>
+      </div>
+      <div style="text-align:right;min-width:190px;">
+        <div style="font-size:0.74rem;color:var(--muted);text-transform:uppercase;">Denetim Skoru</div>
+        <div style="font-size:1.55rem;font-weight:900;color:#34d399;" id="sup-audit-score">10 / 10</div>
+        <div style="font-size:0.76rem;color:#38bdf8;" id="sup-audit-sub">7/7 Vitrin • 4/4 Küme Hazır</div>
+      </div>
+    </section>
+
+    <!-- YENİ BÖLÜM A: BİTMİŞ İŞLER & SOMUT SONUÇLAR VİTRİNİ (7 ANA TESLİMAT — TEK TIKLA AÇ) -->
+    <section class="section-box">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🏆 Bitmiş İşler &amp; Somut Sonuçlar Vitrini (Tek Tıkla Aç — Sohbetlere Girmeye Gerek Yok)</span>
+          <span class="section-badge" style="border-color:#10b981;color:#34d399;background:rgba(16,185,129,0.16);" id="vitrin-count-badge">7 / 7 Tamamlanmış Paket</span>
+        </div>
+        <span style="font-size:0.76rem;color:var(--muted);">AGY + Lokal Codex + Bulut Ordusunun ürettiği tüm nihai APK, HTML, Python, C Motoru ve Raporlar</span>
+      </div>
+      <div class="vitrin-grid" id="vitrin-grid-box"></div>
+    </section>
+
+    <!-- YENİ BÖLÜM B: BİRBİRİYLE ALAKALI SOHBETLER & 4 ANA KONU KÜMESİ HARİTASI -->
+    <section class="section-box">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🗺️ Birbiriyle Alakalı Sohbetler &amp; 4 Ana Konu Kümesi Haritası</span>
+          <span class="section-badge">Hangi Sohbet Neye Bağlı? • Mel Ne İstedi? • Sonuç Ne Oldu?</span>
+        </div>
+        <span style="font-size:0.76rem;color:var(--muted);">Sohbet çiplerine tıklayarak ilgili oturumun röntgen çekmecesini anında açabilirsiniz</span>
+      </div>
+      <div class="clusters-grid" id="clusters-grid-box"></div>
+    </section>
+
+    <!-- BÖLÜM 1 (SOL): CANLI KOMUTA RADARI & AJAN AĞI  +  BÖLÜM 3 (SAĞ): SANİYE SANİYE CANLI EYLEM AKIŞI -->
+    <div class="top-split">
+      <!-- BÖLÜM 1 -->
+      <section class="section-box">
+        <div class="section-header">
+          <div class="section-title">
+            <span>🛸 Bölüm 1 — Canlı Komuta Radarı &amp; Ajan Ağı</span>
+            <span class="section-badge">Başkomutan b78c1bfe + Alt Ajanlar + Lokal Codex</span>
+          </div>
+          <span style="font-size:0.75rem;color:var(--muted);">Düğümlere tıklayarak röntgen çekmecesini açabilirsiniz</span>
+        </div>
+        <div class="radar-wrap">
+          <svg id="radar-svg" viewBox="0 0 820 500" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="radar-legend">
+            <div class="legend-items">
+              <span><i class="legend-dot" style="background:#10b981;"></i>ÇALIŞIYOR (Canlı Nabız)</span>
+              <span><i class="legend-dot" style="background:#38bdf8;"></i>ALT AJAN / SOHBET</span>
+              <span><i class="legend-dot" style="background:#a855f7;"></i>LOKAL CODEX (6.1 Sol)</span>
+              <span><i class="legend-dot" style="background:#f59e0b;"></i>BEKLİYOR / HAZIR</span>
+            </div>
+            <span id="radar-status-text">Canlı veri paketleri akıyor...</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- BÖLÜM 3 -->
+      <section class="section-box">
+        <div class="section-header">
+          <div class="section-title">
+            <span>⚡ Bölüm 3 — Saniye Saniye Canlı Eylem Akışı</span>
+            <span class="section-badge" id="stream-count-badge">0 Eylem</span>
+          </div>
+          <span style="font-size:0.75rem;color:var(--muted);">Komutlar • Web Aramaları • Yazılan Dosyalar</span>
+        </div>
+        <div class="stream-list" id="live-stream-box"></div>
+      </section>
+    </div>
+
+    <!-- BÖLÜM 2: 5 BÜYÜK ÜRETİM CEPHESİ CANLI İLERLEME KARTLARI -->
+    <section class="section-box">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🏗️ Bölüm 2 — 5 Büyük Üretim Cephesi Canlı İlerleme Kartları</span>
+          <span class="section-badge">Gerçek Zamanlı Dosya / APK / C Motoru / Mutabakat Sayaçları</span>
+        </div>
+      </div>
+      <div class="fronts-grid" id="fronts-grid-box"></div>
+    </section>
+
+    <!-- BÖLÜM 4: TÜM AÇIK / SON SOHBETLER (AGY + CODEX) RÖNTGEN TABLOSU -->
+    <section class="section-box">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🔬 Bölüm 4 — Tüm Açık / Son Sohbetler (AGY + Lokal Codex) Canlı Röntgen Tablosu</span>
+          <span class="section-badge">Satıra Tıkla → Detaylı Çekmece</span>
+        </div>
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="setFilter('ALL', this)">Tümü</button>
+          <button class="filter-btn" onclick="setFilter('ACTIVE', this)">Sadece Çalışanlar</button>
+          <button class="filter-btn" onclick="setFilter('SUBAGENT', this)">Alt Ajanlar</button>
+          <button class="filter-btn" onclick="setFilter('CODEX', this)">Lokal Codex</button>
+          <input type="text" class="search-input" id="table-search" placeholder="Sohbet ID, araç, dosya veya konu ara..." oninput="renderTables()" />
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tür / Kaynak</th>
+              <th>Oturum ID</th>
+              <th>Durum</th>
+              <th>Başlık / Görev Özeti</th>
+              <th>Şu An Ne Yapıyor? (Son Eylem)</th>
+              <th>Adım / Token</th>
+              <th>Son Güncelleme</th>
+            </tr>
+          </thead>
+          <tbody id="xray-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- İNTERAKTİF RÖNTGEN ÇEKMECESİ -->
+  <div class="drawer-backdrop" id="drawer-backdrop" onclick="if(event.target===this) closeDrawer()">
+    <div class="drawer">
+      <div class="drawer-head">
+        <div>
+          <div style="font-size:0.76rem;color:var(--cyan);font-weight:800;" id="drw-kind">OTURUM RÖNTGENİ</div>
+          <h3 style="font-size:1.1rem;color:#fff;margin-top:3px;" id="drw-title">-</h3>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;" id="drw-meta">-</div>
+        </div>
+        <button class="close-btn" onclick="closeDrawer()">✕ Kapat</button>
+      </div>
+      <div class="drawer-block">
+        <h4>🎯 Şu Anki Canlı Eylem</h4>
+        <div id="drw-last-action" style="font-size:0.9rem;color:#34d399;font-weight:600;">-</div>
+      </div>
+      <div class="drawer-block">
+        <h4>💬 Son Mesajlar &amp; Adımlar</h4>
+        <div id="drw-messages"></div>
+      </div>
+      <div class="drawer-block">
+        <h4>📁 Oluşturulan / Düzenlenen Dosyalar</h4>
+        <div id="drw-files" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+      <div class="drawer-block">
+        <h4>🌐 Araştırılan Web Adresleri (https://)</h4>
+        <div id="drw-urls" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let CURRENT_DATA = window.__CANLI_VERI__ || null;
+    let CURRENT_FILTER = 'ALL';
+    let SELECTED_ITEM_ID = null;
+    let ANIM_TICK = 0;
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function toFileUrl(p) { if (arguments[0] && /^https?:\/\//i.test(String(arguments[0]))) return String(arguments[0]);
+      if (!p) return '#';
+      let norm = String(p).replace(/\\/g, '/');
+      if (!norm.startsWith('file:///')) {
+        norm = (String(p||'').startsWith('http') ? p : ('file:///' + norm.replace(/^\/+/, '');
+      }
+      return norm;
+    }
+
+    function statusClass(st) {
+      const s = String(st || '').toUpperCase();
+      if (s.includes('ÇALIŞ') || s.includes('AKTİF')) return 'status-CALISIYOR';
+      if (s.includes('BEKL') || s.includes('DOĞRU')) return 'status-BEKLIYOR';
+      return 'status-TAMAMLANDI';
+    }
+
+    function renderRadar(data) {
+      const svg = document.getElementById('radar-svg');
+      if (!svg || !data || !data.radar) return;
+      const nodes = data.radar.nodes || [];
+      const links = data.radar.links || [];
+      const cx = 410, cy = 250;
+
+      const posMap = {};
+      const others = nodes.filter(n => n.group !== 'COMMANDER');
+      nodes.forEach(n => {
+        if (n.group === 'COMMANDER') {
+          posMap[n.id] = { x: cx, y: cy, node: n };
+        }
+      });
+
+      others.forEach((n, idx) => {
+        const angle = (idx / Math.max(1, others.length)) * Math.PI * 2 - Math.PI / 2;
+        const rx = n.group === 'CODEX' ? 305 : 215;
+        const ry = n.group === 'CODEX' ? 185 : 145;
+        posMap[n.id] = {
+          x: Math.round(cx + Math.cos(angle) * rx),
+          y: Math.round(cy + Math.sin(angle) * ry),
+          node: n
+        };
+      });
+
+      let html = `
+        <defs>
+          <radialGradient id="cmdGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#0284c7" stop-opacity="0.85"/>
+          </radialGradient>
+        </defs>
+        <circle cx="${cx}" cy="${cy}" r="85" fill="none" stroke="rgba(56,189,248,0.12)" stroke-dasharray="4 4"/>
+        <circle cx="${cx}" cy="${cy}" r="165" fill="none" stroke="rgba(56,189,248,0.16)" stroke-dasharray="5 5"/>
+        <circle cx="${cx}" cy="${cy}" r="255" fill="none" stroke="rgba(168,85,247,0.16)" stroke-dasharray="6 6"/>
+        <line x1="${cx}" y1="10" x2="${cx}" y2="490" stroke="rgba(56,189,248,0.08)"/>
+        <line x1="20" y1="${cy}" x2="800" y2="${cy}" stroke="rgba(56,189,248,0.08)"/>
+      `;
+
+      links.forEach((lnk, i) => {
+        const s = posMap[lnk.source];
+        const t = posMap[lnk.target];
+        if (!s || !t) return;
+        const isAct = !!lnk.active;
+        const strokeCol = isAct ? 'rgba(16, 185, 129, 0.72)' : 'rgba(148, 163, 184, 0.25)';
+        const strokeW = isAct ? 2.4 : 1.3;
+        html += `<line x1="${s.x}" y1="${s.y}" x2="${t.x}" y2="${t.y}" stroke="${strokeCol}" stroke-width="${strokeW}" ${isAct ? '' : 'stroke-dasharray="4 4"'} />`;
+
+        if (isAct) {
+          const frac = ((ANIM_TICK * 0.08 + i * 0.23) % 1);
+          const px = s.x + (t.x - s.x) * frac;
+          const py = s.y + (t.y - s.y) * frac;
+          html += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="4.5" fill="#34d399" />`;
+        }
+      });
+
+      Object.values(posMap).forEach(({ x, y, node }) => {
+        const isCmd = node.group === 'COMMANDER';
+        const isCodex = node.group === 'CODEX';
+        const isWorking = String(node.status).includes('ÇALIŞ');
+        const r = isCmd ? 30 : 20;
+        let fill = '#0f172a';
+        let stroke = '#38bdf8';
+        if (isCmd) { fill = 'url(#cmdGrad)'; stroke = '#34d399'; }
+        else if (isCodex) { fill = '#1e1b4b'; stroke = isWorking ? '#34d399' : '#a855f7'; }
+        else if (isWorking) { fill = '#064e3b'; stroke = '#10b981'; }
+
+        if (isWorking) {
+          html += `<circle cx="${x}" cy="${y}" r="${r + 9}" fill="none" stroke="#10b981" stroke-width="2" opacity="0.55">
+            <animate attributeName="r" from="${r}" to="${r + 18}" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" from="0.7" to="0" dur="1.6s" repeatCount="indefinite"/>
+          </circle>`;
+        }
+
+        html += `
+          <g style="cursor:pointer" onclick="openDrawerById('${esc(node.id)}')">
+            <circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="2.5"/>
+            <text x="${x}" y="${y + 4}" text-anchor="middle" fill="#fff" font-size="${isCmd ? 11 : 9.5}" font-weight="800">
+              ${esc(isCmd ? 'AGY-ANA' : (isCodex ? 'CODEX' : node.id.slice(0, 6)))}
+            </text>
+            <rect x="${x - 82}" y="${y + r + 5}" width="164" height="32" rx="6" fill="rgba(6,10,22,0.88)" stroke="rgba(148,163,184,0.22)"/>
+            <text x="${x}" y="${y + r + 18}" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="700">${esc(node.label.slice(0, 25))}</text>
+            <text x="${x}" y="${y + r + 31}" text-anchor="middle" fill="${isWorking ? '#34d399' : '#94a3b8'}" font-size="9">${esc(node.sublabel.slice(0, 28))}</text>
+          </g>
+        `;
+      });
+
+      svg.innerHTML = html;
+    }
+
+    function renderSupervisor(data) {
+      const sup = data && data.supervisor_audit;
+      if (!sup) return;
+      const noteEl = document.getElementById('sup-audit-note');
+      const scoreEl = document.getElementById('sup-audit-score');
+      const subEl = document.getElementById('sup-audit-sub');
+      const checksEl = document.getElementById('sup-checks-list');
+      if (noteEl) noteEl.textContent = sup.last_audit_note || '';
+      if (scoreEl) scoreEl.textContent = sup.audit_score || '10 / 10';
+      if (subEl) subEl.textContent = `${sup.verified_deliverables || ''} • ${sup.verified_clusters || ''}`;
+      if (checksEl && Array.isArray(sup.checks)) {
+        checksEl.innerHTML = sup.checks.map(c => `
+          <span class="sup-check-pill">${c.ok ? '✅' : '⏳'} ${esc(c.name)}</span>
+        `).join('');
+      }
+    }
+
+    function renderVitrin(data) {
+      const box = document.getElementById('vitrin-grid-box');
+      const badge = document.getElementById('vitrin-count-badge');
+      if (!box || !data || !Array.isArray(data.finished_deliverables)) return;
+      const items = data.finished_deliverables;
+      if (badge) badge.textContent = `${items.length} / ${items.length} Tamamlanmış Paket`;
+
+      box.innerHTML = items.map(it => {
+        const filesHtml = (it.files || []).map(fp => {
+          const base = fp.split(/[\\/]/).pop() || fp;
+          return `<a class="mini-link" href="${esc(toFileUrl(fp))}" target="_blank" title="${esc(fp)}">📄 ${esc(base)}</a>`;
+        }).join('');
+
+        const chatsHtml = (it.related_chats || []).map(cid => `
+          <span class="chat-chip" onclick="openDrawerById('${esc(cid.replace('codex:', 'codex-'))}')">🔗 ${esc(cid)}</span>
+        `).join('');
+
+        return `
+          <div class="vitrin-card">
+            <div>
+              <div class="front-top">
+                <span class="front-no">SONUÇ #${esc(it.no)} • ${esc(it.category)}</span>
+                <span class="status-badge status-CALISIYOR">✅ ${esc(it.status)}</span>
+              </div>
+              <div class="front-title" style="margin-top:6px;">${esc(it.title)}</div>
+              <div class="front-sub" style="margin-top:5px;color:#cbd5e1;line-height:1.45;">${esc(it.summary)}</div>
+            </div>
+            <div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                <span class="section-badge">${esc(it.metrics_badge || '')}</span>
+                ${chatsHtml}
+              </div>
+              <div class="stream-links" style="margin-bottom:10px;">
+                ${filesHtml}
+              </div>
+              <a class="vitrin-cta" href="${esc(toFileUrl(it.primary_path))}" target="_blank">
+                🚀 Ana Sonucu / Klasörü Tek Tıkla Aç →
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderClusters(data) {
+      const box = document.getElementById('clusters-grid-box');
+      if (!box || !data || !Array.isArray(data.topic_clusters)) return;
+      box.innerHTML = data.topic_clusters.map(cl => {
+        const agyChips = (cl.agy_chats || []).map(cid => `
+          <span class="chat-chip" onclick="openDrawerById('${esc(cid)}')" title="Sohbet röntgenini aç">💬 AGY: ${esc(cid)}</span>
+        `).join('');
+        const subChips = (cl.subagents || []).map(cid => `
+          <span class="chat-chip" style="border-color:#a855f7;color:#d8b4fe;background:rgba(168,85,247,0.15);" onclick="openDrawerById('${esc(cid)}')">🤖 Alt Ajan: ${esc(cid)}</span>
+        `).join('');
+        const codexChips = (cl.codex_channels || []).map(ch => `
+          <span class="chat-chip" style="border-color:#10b981;color:#6ee7b7;background:rgba(16,185,129,0.14);">⚙️ Codex: ${esc(ch)}</span>
+        `).join('');
+        const linksHtml = (cl.deliverable_links || []).map(lnk => `
+          <a class="mini-link" href="${esc(toFileUrl(lnk.path))}" target="_blank">${esc(lnk.label)}</a>
+        `).join('');
+
+        return `
+          <div class="cluster-card" style="border-left-color:${esc(cl.color || '#38bdf8')}">
+            <div class="front-top">
+              <span class="section-badge" style="color:${esc(cl.color || '#38bdf8')};border-color:${esc(cl.color || '#38bdf8')}">${esc(cl.badge)}</span>
+              <span class="front-no">KÜME #${esc(cl.no)}</span>
+            </div>
+            <div class="front-title">${esc(cl.title)}</div>
+            <div style="font-size:0.81rem;color:#e2e8f0;background:rgba(6,10,22,0.7);padding:8px 10px;border-radius:8px;">
+              <strong style="color:#38bdf8;">🎯 Mel Ne İstedi:</strong> ${esc(cl.mel_goal)}
+            </div>
+            <div style="font-size:0.81rem;color:#a7f3d0;background:rgba(16,185,129,0.08);padding:8px 10px;border-radius:8px;border:1px solid rgba(16,185,129,0.25);">
+              <strong>✅ Ne Yapıldı / Sonuç:</strong> ${esc(cl.what_was_done)}
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;font-weight:700;">Bağlantılı Sohbetler &amp; Ajanlar:</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                ${agyChips}${subChips}${codexChips}
+              </div>
+            </div>
+            <div>
+              <div style="font-size:0.72rem;color:var(--muted);margin-bottom:5px;text-transform:uppercase;font-weight:700;">Küme Çıktıları (Tek Tıkla Aç):</div>
+              <div class="stream-links">${linksHtml}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderFronts(data) {
+      const box = document.getElementById('fronts-grid-box');
+      if (!box || !data || !data.fronts) return;
+      box.innerHTML = data.fronts.map(f => {
+        const metricsHtml = (f.metrics || []).map(m => `
+          <div class="f-metric">
+            <div class="f-metric-lbl">${esc(m.label)}</div>
+            <div class="f-metric-val">${esc(m.value)}</div>
+          </div>
+        `).join('');
+
+        const filesHtml = (f.files || []).slice(0, 3).map(fp => {
+          const base = fp.split(/[\\/]/).pop();
+          return `<a class="mini-link" href="${esc(toFileUrl(fp))}" target="_blank" title="${esc(fp)}">📄 ${esc(base)}</a>`;
+        }).join('');
+
+        return `
+          <div class="front-card">
+            <div>
+              <div class="front-top">
+                <span class="front-no">CEPHE #${esc(f.no)}</span>
+                <span class="status-badge ${statusClass(f.status)}">${esc(f.status)}</span>
+              </div>
+              <div class="front-title">${esc(f.title)}</div>
+              <div class="front-sub">${esc(f.subtitle)}</div>
+            </div>
+
+            <div class="progress-wrap">
+              <div class="progress-head">
+                <span>Görevli: ${esc(f.owner)}</span>
+                <span style="color:#34d399">%${esc(f.progress)}</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:${Math.min(100, Math.max(5, Number(f.progress) || 0))}%"></div>
+              </div>
+            </div>
+
+            <div class="front-metrics">${metricsHtml}</div>
+            <div class="front-act">⚡ ${esc(f.last_activity)}</div>
+            <div class="stream-links">
+              <a class="mini-link" href="${esc(toFileUrl(f.path))}" target="_blank">📂 Cephe Klasörünü Aç</a>
+              ${filesHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderStream(data) {
+      const box = document.getElementById('live-stream-box');
+      const badge = document.getElementById('stream-count-badge');
+      if (!box || !data) return;
+      const items = data.live_stream || [];
+      if (badge) badge.textContent = `${items.length} Canlı Eylem`;
+
+      box.innerHTML = items.slice(0, 45).map(ev => {
+        const kindCls = String(ev.agent_kind || '').split(' ')[0];
+        const fileLinks = (ev.files || []).slice(0, 3).map(fp => {
+          const b = fp.split(/[\\/]/).pop();
+          return `<a class="mini-link" href="${esc(toFileUrl(fp))}" target="_blank">📝 ${esc(b)}</a>`;
+        }).join('');
+        const urlLinks = (ev.urls || []).slice(0, 3).map(u => {
+          let host = u;
+          try { host = new URL(u).hostname; } catch (e) {}
+          return `<a class="mini-link" href="${esc(u)}" target="_blank">🌐 ${esc(host)}</a>`;
+        }).join('');
+
+        return `
+          <div class="stream-item kind-${esc(kindCls)}">
+            <div class="stream-meta">
+              <span>
+                <span class="agent-tag">${esc(ev.agent_id)}</span>
+                <strong style="margin-left:5px;color:#cbd5e1;">${esc((ev.agent_title || '').slice(0, 38))}</strong>
+              </span>
+              <span>
+                <span class="tool-tag">${esc(ev.tool)}</span>
+              </span>
+            </div>
+            <div class="stream-desc">${esc(ev.desc)}</div>
+            ${(fileLinks || urlLinks) ? `<div class="stream-links">${fileLinks}${urlLinks}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setFilter(f, btn) {
+      CURRENT_FILTER = f;
+      document.querySelectorAll('.filter-bar .filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      renderTables();
+    }
+
+    function getCombinedRows(data) {
+      const rows = [];
+      (data.agy_conversations || []).forEach(c => {
+        rows.push({
+          uid: c.short_id,
+          full_id: c.id,
+          source: 'AGY',
+          kind: c.kind,
+          status: c.status,
+          title: c.title,
+          last_action: c.last_action_tr,
+          steps_info: `${c.steps} adım • ${(c.tokens || 0).toLocaleString('tr-TR')} tok`,
+          updated: `${c.updated_time} (${c.age_human})`,
+          raw: c
+        });
+      });
+      (data.codex_sessions || []).forEach(x => {
+        rows.push({
+          uid: 'codex-' + x.short_id,
+          full_id: x.id,
+          source: 'CODEX',
+          kind: `CODEX (${x.effort})`,
+          status: x.status,
+          title: x.title,
+          last_action: x.last_action_tr,
+          steps_info: `${x.turn_count || 0} tur • ${x.model}`,
+          updated: `${x.updated_time} (${x.age_human})`,
+          raw: x
+        });
+      });
+      return rows;
+    }
+
+    function renderTables() {
+      if (!CURRENT_DATA) return;
+      const tbody = document.getElementById('xray-table-body');
+      const q = (document.getElementById('table-search')?.value || '').trim().toLowerCase();
+      let rows = getCombinedRows(CURRENT_DATA);
+
+      rows = rows.filter(r => {
+        if (CURRENT_FILTER === 'ACTIVE' && !String(r.status).includes('ÇALIŞ')) return false;
+        if (CURRENT_FILTER === 'SUBAGENT' && r.kind !== 'ALT AJAN') return false;
+        if (CURRENT_FILTER === 'CODEX' && r.source !== 'CODEX') return false;
+        if (q) {
+          const hay = `${r.uid} ${r.full_id} ${r.kind} ${r.title} ${r.last_action}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      tbody.innerHTML = rows.map(r => `
+        <tr class="conv-row" onclick="openDrawerById('${esc(r.uid)}')">
+          <td><span class="section-badge" style="${r.source === 'CODEX' ? 'border-color:#a855f7;color:#d8b4fe;background:rgba(168,85,247,0.15)' : ''}">${esc(r.kind)}</span></td>
+          <td class="mono-id">${esc(r.uid)}</td>
+          <td><span class="status-badge ${statusClass(r.status)}">${esc(r.status)}</span></td>
+          <td style="font-weight:700;color:#f8fafc;max-width:300px;">${esc(r.title)}</td>
+          <td style="color:#cbd5e1;max-width:430px;">${esc(r.last_action)}</td>
+          <td style="white-space:nowrap;color:#94a3b8;">${esc(r.steps_info)}</td>
+          <td style="white-space:nowrap;color:#38bdf8;font-weight:600;">${esc(r.updated)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function openDrawerById(uid) {
+      SELECTED_ITEM_ID = uid;
+      if (!CURRENT_DATA) return;
+      const rows = getCombinedRows(CURRENT_DATA);
+      const found = rows.find(r => r.uid === uid || r.raw.short_id === uid);
+      if (!found) return;
+
+      const c = found.raw;
+      document.getElementById('drw-kind').textContent = `${found.kind} • ID: ${found.full_id}`;
+      document.getElementById('drw-title').textContent = found.title;
+      document.getElementById('drw-meta').textContent = `Durum: ${found.status} | Güncelleme: ${c.updated_at || '-'} (${c.age_human || ''})`;
+      document.getElementById('drw-last-action').textContent = found.last_action;
+
+      const msgs = c.recent_messages || [];
+      const msgBox = document.getElementById('drw-messages');
+      if (msgs.length > 0) {
+        msgBox.innerHTML = msgs.slice().reverse().map(m => `
+          <div class="msg-bubble role-${esc(m.role)}">
+            <div style="font-size:0.71rem;color:#94a3b8;margin-bottom:3px;">
+              <strong>[${esc(m.role)} • Adım ${esc(m.step)}]</strong> — ${esc(m.tool || '')}
+            </div>
+            <div>${esc(m.text)}</div>
+          </div>
+        `).join('');
+      } else {
+        msgBox.innerHTML = `<div class="msg-bubble">${esc(c.full_prompt || c.last_action_tr || 'Detay kaydı hazır.')}</div>`;
+      }
+
+      const files = c.created_files || (c.cwd ? [c.cwd] : []);
+      document.getElementById('drw-files').innerHTML = files.length
+        ? files.map(fp => `<a class="mini-link" href="${esc(toFileUrl(fp))}" target="_blank">📁 ${esc(fp.split(/[\\/]/).pop() || fp)}</a>`).join('')
+        : '<span style="color:var(--muted);font-size:0.8rem;">Henüz dosya kaydı yok</span>';
+
+      const urls = c.researched_urls || [];
+      document.getElementById('drw-urls').innerHTML = urls.length
+        ? urls.map(u => `<a class="mini-link" href="${esc(u)}" target="_blank">🌐 ${esc(u.slice(0, 65))}</a>`).join('')
+        : '<span style="color:var(--muted);font-size:0.8rem;">Henüz https:// araştırma linki yok</span>';
+
+      document.getElementById('drawer-backdrop').classList.add('open');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drawer-backdrop').classList.remove('open');
+      SELECTED_ITEM_ID = null;
+    }
+
+    function applyLiveData(data, modeLabel) {
+      if (!data || !data.summary) return;
+      CURRENT_DATA = data;
+      ANIM_TICK++;
+
+      document.getElementById('conn-mode-pill').textContent = modeLabel;
+      document.getElementById('last-upd-time').textContent = data.updated_time || '--:--:--';
+      document.getElementById('scan-ms-val').textContent = `${data.scan_ms || 0} ms`;
+
+      const s = data.summary;
+      document.getElementById('kpi-active-agy').textContent = s.active_agy_count;
+      document.getElementById('kpi-sub-agy').textContent = `(${s.active_subagent_count} Alt Ajan Çalışıyor)`;
+      document.getElementById('kpi-total-agy').textContent = `Son ${s.total_agy_scanned} AGY oturumu canlı izleniyor`;
+      document.getElementById('kpi-active-codex').textContent = s.active_codex_count;
+      document.getElementById('kpi-total-codex').textContent = `Toplam ${s.total_codex_scanned} son Lokal Codex oturumu`;
+      document.getElementById('kpi-front-pct').textContent = `%${s.overall_front_progress}`;
+      document.getElementById('kpi-files-cnt').textContent = `${s.total_created_files} Dosya`;
+      document.getElementById('kpi-urls-cnt').textContent = `/ ${s.total_researched_urls} https:// link`;
+
+      renderSupervisor(data);
+      renderVitrin(data);
+      renderClusters(data);
+      renderRadar(data);
+      renderFronts(data);
+      renderStream(data);
+      renderTables();
+      if (SELECTED_ITEM_ID) openDrawerById(SELECTED_ITEM_ID);
+    }
+
+    window.__CANLI_VERI_GUNCELLENDI__ = function(payload) {
+      applyLiveData(payload, '🟢 Canlı Mod: file:// Atomik JS (2sn)');
+    };
+
+    async function pollLiveTelemetry() {
+      try {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 1200);
+        const res = await fetch('http://127.0.0.1:18888/api/live?t=' + Date.now(), { signal: ctrl.signal, cache: 'no-store' });
+        clearTimeout(tid);
+        if (res.ok) {
+          const json = await res.json();
+          applyLiveData(json, '🟢 Canlı Mod: HTTP 18888 API (2sn)');
+          return;
+        }
+      } catch (e) {}
+
+      try {
+        const oldScript = document.getElementById('dynamic-canli-veri-script');
+        if (oldScript) oldScript.remove();
+        const s = document.createElement('script');
+        s.id = 'dynamic-canli-veri-script';
+        s.src = 'canli_veri.js?t=' + Date.now();
+        document.body.appendChild(s);
+      } catch (err) {}
+    }
+
+    function forceRefreshNow() {
+      pollLiveTelemetry();
+    }
+
+    if (window.__CANLI_VERI__) {
+      applyLiveData(window.__CANLI_VERI__, '🟢 Canlı Mod: Hazır Veri Yüklendi');
+    }
+    pollLiveTelemetry();
+    setInterval(pollLiveTelemetry, 2000);
+    setInterval(() => {
+      if (CURRENT_DATA) {
+        ANIM_TICK++;
+        renderRadar(CURRENT_DATA);
+      }
+    }, 450);
+  </script>
+</body>
+</html>

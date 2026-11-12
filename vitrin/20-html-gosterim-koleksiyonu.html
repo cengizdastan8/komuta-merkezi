@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Antigravity — 20 İnteraktif HTML Gösterim Koleksiyonu</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #111827;
+      --border: #1f2937;
+      --text: #f3f4f6;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    @keyframes flowDash {
+      to { stroke-dashoffset: -24; }
+    }
+    .anim-line {
+      stroke-dasharray: 6 6;
+      animation: flowDash 0.85s linear infinite;
+    }
+    /* 3D Isometric Stack */
+    .iso-scene {
+      perspective: 800px;
+      padding: 18px 0;
+    }
+    .iso-layer {
+      transform: rotateX(48deg) rotateZ(-18deg);
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+      box-shadow: -8px 8px 0px rgba(0,0,0,0.45);
+    }
+    .iso-layer.iso-active {
+      transform: rotateX(35deg) rotateZ(-10deg) translateZ(18px) scale(1.04);
+      box-shadow: -12px 14px 20px rgba(16, 185, 129, 0.35);
+    }
+    /* 3D Flip Card */
+    .flip-card {
+      perspective: 900px;
+      height: 108px;
+    }
+    .flip-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+    .flip-card.flipped .flip-inner {
+      transform: rotateY(180deg);
+    }
+    .flip-front, .flip-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .flip-back {
+      transform: rotateY(180deg);
+    }
+    .fav-selected {
+      background: rgba(16, 185, 129, 0.25) !important;
+      border-color: #10b981 !important;
+      color: #6ee7b7 !important;
+    }
+  </style>
+</head>
+<body class="antialiased pb-24">
+
+  <!-- SABİT ÜST BAR (Hızlı Atlama + Tekli/Galeri Modu) -->
+  <header class="sticky top-0 z-50 bg-[#090d16]/95 backdrop-blur border-b border-slate-800 px-3 py-2">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <div>
+          <h1 class="text-xs sm:text-sm font-extrabold text-emerald-400 tracking-wide">
+            🌐 20 İNTERAKTİF HTML GÖSTERİM VİTRİNİ
+          </h1>
+          <p class="text-[10px] text-slate-400">
+            Beğendiğin kartların sağ üstündeki <b>"⭐ Seç"</b> düğmesine dokun!
+          </p>
+        </div>
+        <button onclick="showAllCards()" id="btnShowAll" class="text-[10px] px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold shrink-0">
+          📜 Tümü Açık (20)
+        </button>
+      </div>
+      <!-- 1..20 Numara Çubuğu (Yatay Kaydırmasız 10x2 Izgara) -->
+      <div class="grid grid-cols-10 gap-1 text-[10px]">
+        <button onclick="jumpToCard(1)" id="nav-1" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#1</button>
+        <button onclick="jumpToCard(2)" id="nav-2" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#2</button>
+        <button onclick="jumpToCard(3)" id="nav-3" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#3</button>
+        <button onclick="jumpToCard(4)" id="nav-4" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#4</button>
+        <button onclick="jumpToCard(5)" id="nav-5" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#5</button>
+        <button onclick="jumpToCard(6)" id="nav-6" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#6</button>
+        <button onclick="jumpToCard(7)" id="nav-7" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#7</button>
+        <button onclick="jumpToCard(8)" id="nav-8" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">#8</button>
+        <button onclick="jumpToCard(9)" id="nav-9" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#9</button>
+        <button onclick="jumpToCard(10)" id="nav-10" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#10</button>
+        <button onclick="jumpToCard(11)" id="nav-11" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#11</button>
+        <button onclick="jumpToCard(12)" id="nav-12" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#12</button>
+        <button onclick="jumpToCard(13)" id="nav-13" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#13</button>
+        <button onclick="jumpToCard(14)" id="nav-14" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#14</button>
+        <button onclick="jumpToCard(15)" id="nav-15" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#15</button>
+        <button onclick="jumpToCard(16)" id="nav-16" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#16</button>
+        <button onclick="jumpToCard(17)" id="nav-17" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#17</button>
+        <button onclick="jumpToCard(18)" id="nav-18" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#18</button>
+        <button onclick="jumpToCard(19)" id="nav-19" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#19</button>
+        <button onclick="jumpToCard(20)" id="nav-20" class="py-0.5 rounded bg-slate-800 border border-slate-700 text-amber-300 font-bold">#20</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ANA GALERİ KONTEYNERİ -->
+  <main class="max-w-3xl mx-auto px-2.5 pt-3 space-y-4">
+
+    <!-- ========================================================= -->
+    <!-- KART #1: CANLI PAKET AKIŞI (konraddzbik)                  -->
+    <!-- ========================================================= -->
+    <section id="card-1" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#1 ⚡ Canlı Paket Akışı (Animated Packet Flow)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>konraddzbik/architecture-diagram-skill</code></div>
+        </div>
+        <button onclick="toggleFav(1)" id="fav-1" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #1</button>
+      </div>
+
+      <div class="flex items-center justify-between text-[10px] bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800 mb-2">
+        <span class="text-slate-400">Kutulara dokunarak içindeki veriyi incele:</span>
+        <div class="flex gap-1">
+          <button onclick="setFlowMode('now')" id="fmode-now" class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">🔴 Şu An</button>
+          <button onclick="setFlowMode('clean')" id="fmode-clean" class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">🟢 İlk Gün</button>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-1.5 mb-2">
+        <svg viewBox="0 0 340 155" class="w-full h-auto">
+          <path id="wire1" d="M 72 35 L 130 35" stroke="#f43f5e" stroke-width="2.5" fill="none" class="anim-line" />
+          <path id="wire2" d="M 210 35 L 262 35" stroke="#f43f5e" stroke-width="2.5" fill="none" class="anim-line" />
+          <path id="wire3" d="M 300 55 L 300 95 L 215 95" stroke="#f59e0b" stroke-width="2.5" fill="none" class="anim-line" />
+          <path id="wire4" d="M 130 95 L 75 95" stroke="#38bdf8" stroke-width="2.5" fill="none" class="anim-line" />
+          <path id="wireClean" d="M 72 35 C 170 35, 170 125, 75 125" stroke="#10b981" stroke-width="3" fill="none" class="anim-line hidden" />
+
+          <g onclick="inspectFlow(0)" class="cursor-pointer">
+            <rect x="8" y="15" width="64" height="40" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+            <text x="40" y="32" text-anchor="middle" fill="#a7f3d0" font-size="9" font-weight="bold">💬 Mesajın</text>
+            <text x="40" y="45" text-anchor="middle" fill="#6ee7b7" font-size="7.5">watcher.py</text>
+          </g>
+          <g id="fnode-hook" onclick="inspectFlow(1)" class="cursor-pointer">
+            <rect x="130" y="15" width="80" height="40" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-width="1.5"/>
+            <text x="170" y="31" text-anchor="middle" fill="#fecdd3" font-size="8.5" font-weight="bold">🐍 agy_fast_hook</text>
+            <text x="170" y="44" text-anchor="middle" fill="#fda4af" font-size="7.5">hooks.json (Ön)</text>
+          </g>
+          <g id="fnode-anons" onclick="inspectFlow(2)" class="cursor-pointer">
+            <rect x="262" y="15" width="70" height="40" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-width="1.5"/>
+            <text x="297" y="31" text-anchor="middle" fill="#fecdd3" font-size="8.5" font-weight="bold">📢 Anons</text>
+            <text x="297" y="44" text-anchor="middle" fill="#fda4af" font-size="7.5">"Codex'e ver!"</text>
+          </g>
+          <g id="fnode-bio" onclick="inspectFlow(3)" class="cursor-pointer">
+            <rect x="130" y="75" width="85" height="42" rx="6" fill="#451a03" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="172" y="92" text-anchor="middle" fill="#fde68a" font-size="8.5" font-weight="bold">🧬 31 Biyoloji</text>
+            <text x="172" y="105" text-anchor="middle" fill="#fcd34d" font-size="7.5">+ GEMINI.md</text>
+          </g>
+          <g onclick="inspectFlow(4)" class="cursor-pointer">
+            <rect x="8" y="75" width="67" height="70" rx="6" fill="#0c4a6e" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="41" y="98" text-anchor="middle" fill="#bae6fd" font-size="9" font-weight="bold">🤖 MODEL</text>
+            <text x="41" y="112" text-anchor="middle" fill="#7dd3fc" font-size="7.5">Argon Medium</text>
+            <text id="modelSubText" x="41" y="128" text-anchor="middle" fill="#fda4af" font-size="7" font-weight="bold">Kısıtlı Yanıt</text>
+          </g>
+        </svg>
+      </div>
+      <div id="flowInspector" class="bg-slate-950 border border-rose-500/40 rounded-lg p-2 text-[11px]">
+        <div class="font-bold text-rose-300">🔍 Payload: agy_fast_hook.py ➔ canli-anons.json</div>
+        <div class="text-slate-400 mt-0.5">Her mesajda araya girip modele <b class="text-slate-200">"Kotayı koru, ham işi kendin yapma Lokal Codex'e yaptır"</b> JSON paketini enjekte eder.</div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #2: BEYİN ALAN HARİTASI (CodeCharta Treemap)         -->
+    <!-- ========================================================= -->
+    <section id="card-2" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#2 🧩 Beyin Alan Haritası (Interactive Treemap)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>MaibornWolff/codecharta</code></div>
+        </div>
+        <button onclick="toggleFav(2)" id="fav-2" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #2</button>
+      </div>
+      <div class="grid grid-cols-12 gap-1.5 h-44 text-[10px] mb-2">
+        <div onclick="setTreeInfo('bio')" class="col-span-8 bg-rose-500/20 border-2 border-rose-500/60 rounded-lg p-2.5 flex flex-col justify-between cursor-pointer">
+          <div>
+            <span class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">%66 BEYİN İŞGALİ</span>
+            <div class="font-bold text-rose-300 text-xs mt-1">🧬 science Eklentisi (31 Biyoloji Skill'i)</div>
+            <div class="text-[10px] text-rose-200/80 mt-0.5">config.json + AGENTS.md</div>
+          </div>
+          <div class="text-[9.5px] text-rose-200/80 leading-tight">
+            AlphaFold, ClinVar, ChEMBL, gnomAD, PyMOL, UniProt... (Kullanmadığın halde her sohbette beyne yükleniyor!)
+          </div>
+        </div>
+        <div class="col-span-4 flex flex-col gap-1">
+          <div onclick="setTreeInfo('hook')" class="flex-1 bg-amber-500/20 border border-amber-500/60 rounded-lg p-1.5 flex flex-col justify-center cursor-pointer">
+            <div class="font-bold text-amber-300 text-[10px]">📢 Kanca (%15)</div>
+            <div class="text-[9px] text-amber-200/80 truncate">agy_fast_hook.py</div>
+          </div>
+          <div onclick="setTreeInfo('rule')" class="flex-1 bg-sky-500/20 border border-sky-500/60 rounded-lg p-1.5 flex flex-col justify-center cursor-pointer">
+            <div class="font-bold text-sky-300 text-[10px]">📜 Kural (%9)</div>
+            <div class="text-[9px] text-sky-200/80 truncate">GEMINI.md (Kısa)</div>
+          </div>
+          <div onclick="setTreeInfo('core')" class="flex-1 bg-emerald-500/20 border border-emerald-500/60 rounded-lg p-1.5 flex flex-col justify-center cursor-pointer">
+            <div class="font-bold text-emerald-300 text-[10px]">🟢 Öz (%10)</div>
+            <div class="text-[9px] text-emerald-200/80 truncate">7 Temel + 6 Özel</div>
+          </div>
+        </div>
+      </div>
+      <div id="treeDetail" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-300">
+        💡 Kutulara dokun: İlk yüklenen sistemde sadece sağ alttaki <b>🟢 %10'luk yeşil kutu</b> vardı; şu an beynin <b>%90'ı</b> biyoloji ve kısıtlama kutularıyla dolu!
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #3: KARANLIK NEON SİNİR AĞI (CodeLandscapeViewer)    -->
+    <!-- ========================================================= -->
+    <section id="card-3" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#3 🕸️ Karanlık Neon Sinir Ağı (Force Node Graph)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>glenwrhodes/CodeLandscapeViewer</code></div>
+        </div>
+        <button onclick="toggleFav(3)" id="fav-3" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #3</button>
+      </div>
+      <div class="bg-[#060911] border border-slate-800 rounded-lg p-1 mb-2">
+        <svg viewBox="0 0 340 160" class="w-full h-auto">
+          <line x1="170" y1="80" x2="60" y2="30" stroke="#f43f5e" stroke-width="1.8" stroke-opacity="0.7"/>
+          <line x1="170" y1="80" x2="280" y2="30" stroke="#f43f5e" stroke-width="1.8" stroke-opacity="0.7"/>
+          <line x1="170" y1="80" x2="55" y2="130" stroke="#f59e0b" stroke-width="1.8" stroke-opacity="0.7"/>
+          <line x1="170" y1="80" x2="285" y2="130" stroke="#38bdf8" stroke-width="1.8" stroke-opacity="0.7"/>
+          <line x1="170" y1="80" x2="170" y2="20" stroke="#10b981" stroke-width="1.8" stroke-opacity="0.7"/>
+          <line x1="170" y1="80" x2="170" y2="142" stroke="#a855f7" stroke-width="1.8" stroke-opacity="0.7"/>
+
+          <g onclick="selectNode(0)" class="cursor-pointer">
+            <circle cx="170" cy="80" r="25" fill="#0f172a" stroke="#38bdf8" stroke-width="2.5"/>
+            <text x="170" y="77" text-anchor="middle" fill="#e0f2fe" font-size="8.5" font-weight="bold">🧠 AGY</text>
+            <text x="170" y="88" text-anchor="middle" fill="#7dd3fc" font-size="7">ÇEKİRDEK</text>
+          </g>
+          <g onclick="selectNode(1)" class="cursor-pointer">
+            <circle cx="60" cy="30" r="20" fill="#4c0519" stroke="#f43f5e" stroke-width="1.8"/>
+            <text x="60" y="28" text-anchor="middle" fill="#fecdd3" font-size="7.5" font-weight="bold">🐍 Hook</text>
+            <text x="60" y="38" text-anchor="middle" fill="#fda4af" font-size="6.5">agy_fast</text>
+          </g>
+          <g onclick="selectNode(2)" class="cursor-pointer">
+            <circle cx="280" cy="30" r="20" fill="#4c0519" stroke="#f43f5e" stroke-width="1.8"/>
+            <text x="280" y="28" text-anchor="middle" fill="#fecdd3" font-size="7.5" font-weight="bold">📢 Anons</text>
+            <text x="280" y="38" text-anchor="middle" fill="#fda4af" font-size="6.5">"Codex'e"</text>
+          </g>
+          <g onclick="selectNode(3)" class="cursor-pointer">
+            <circle cx="55" cy="130" r="21" fill="#451a03" stroke="#f59e0b" stroke-width="1.8"/>
+            <text x="55" y="128" text-anchor="middle" fill="#fde68a" font-size="7.5" font-weight="bold">🧬 Science</text>
+            <text x="55" y="138" text-anchor="middle" fill="#fcd34d" font-size="6.5">31 Biyoloji</text>
+          </g>
+          <g onclick="selectNode(4)" class="cursor-pointer">
+            <circle cx="285" cy="130" r="20" fill="#082f49" stroke="#38bdf8" stroke-width="1.8"/>
+            <text x="285" y="128" text-anchor="middle" fill="#bae6fd" font-size="7.5" font-weight="bold">📜 Kural</text>
+            <text x="285" y="138" text-anchor="middle" fill="#7dd3fc" font-size="6.5">GEMINI.md</text>
+          </g>
+          <g onclick="selectNode(5)" class="cursor-pointer">
+            <circle cx="170" cy="20" r="15" fill="#064e3b" stroke="#10b981" stroke-width="1.5"/>
+            <text x="170" y="22" text-anchor="middle" fill="#a7f3d0" font-size="7" font-weight="bold">⚡ 6 Skill</text>
+          </g>
+          <g onclick="selectNode(6)" class="cursor-pointer">
+            <circle cx="170" cy="142" r="15" fill="#3b0764" stroke="#a855f7" stroke-width="1.5"/>
+            <text x="170" y="144" text-anchor="middle" fill="#e9d5ff" font-size="7" font-weight="bold">📚 Hafıza</text>
+          </g>
+        </svg>
+      </div>
+      <div id="nodeInfo" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-300">
+        👆 Yuvarlak düğümlere dokunarak merkeze ne gönderdiklerini gör!
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #4: IDE KLASÖR AĞACI & YAN DENETÇİ (heiswayi/archmap)-->
+    <!-- ========================================================= -->
+    <section id="card-4" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#4 💻 IDE Klasör Ağacı & Yan Denetçi (Archmap)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>heiswayi/archmap</code></div>
+        </div>
+        <button onclick="toggleFav(4)" id="fav-4" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #4</button>
+      </div>
+      <div class="grid grid-cols-12 gap-1.5 h-44 text-[10px]">
+        <div class="col-span-6 bg-slate-950 border border-slate-800 rounded-lg p-2 space-y-1 overflow-y-auto">
+          <div class="font-bold text-amber-400">📁 .gemini/</div>
+          <div onclick="inspectFile('gemini')" class="pl-2 py-0.5 rounded hover:bg-white/5 cursor-pointer text-rose-300">📜 GEMINI.md 🔴</div>
+          <div class="pl-2 font-semibold text-sky-300">📁 user-message-logger/</div>
+          <div onclick="inspectFile('watcher')" class="pl-4 py-0.5 rounded hover:bg-white/5 cursor-pointer">🐍 watcher.py</div>
+          <div onclick="inspectFile('hook')" class="pl-4 py-0.5 rounded bg-emerald-500/15 border border-emerald-500/40 cursor-pointer text-rose-300 font-bold">🐍 agy_fast_hook.py 🔴</div>
+          <div onclick="inspectFile('anons')" class="pl-4 py-0.5 rounded hover:bg-white/5 cursor-pointer text-rose-300">📢 canli-anons.json 🔴</div>
+          <div class="pl-2 font-semibold text-sky-300">📁 config/</div>
+          <div onclick="inspectFile('config')" class="pl-4 py-0.5 rounded hover:bg-white/5 cursor-pointer text-amber-300">⚙️ config.json (31 Bio)</div>
+          <div onclick="inspectFile('skills')" class="pl-4 py-0.5 rounded hover:bg-white/5 cursor-pointer text-emerald-300">📁 skills/ (6 Özel)</div>
+        </div>
+        <div id="ideInspector" class="col-span-6 bg-slate-950 border border-emerald-500/40 rounded-lg p-2.5 flex flex-col justify-between">
+          <div>
+            <div class="text-[9px] text-rose-400 font-bold uppercase">🔴 GİZLİ KANCA (PRE/STOP)</div>
+            <div class="font-bold text-xs mt-0.5">🐍 agy_fast_hook.py</div>
+            <div class="text-[10px] text-slate-400 mt-1 leading-snug">
+              Sen mesaj attığında modelden <b>önce</b> çalışır. <code>canli-anons.json</code> ve <code>ortak-hafiza.md</code> dosyalarını okuyup mesajına gizli komutan emri ekler.
+            </div>
+          </div>
+          <div class="bg-rose-500/15 border border-rose-500/30 rounded p-1.5 text-[9.5px] text-rose-300">
+            <b>İlk Günde:</b> Bu dosya yoktu.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #5: KULVAR & ZAMAN MATRİSİ (amdahlco/system-diagram) -->
+    <!-- ========================================================= -->
+    <section id="card-5" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#5 🏊 Kulvar & Zaman Matrisi (Swimlane Grid)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>amdahlco/system-diagram</code></div>
+        </div>
+        <button onclick="toggleFav(5)" id="fav-5" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #5</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[10px] mb-2">
+        <div class="grid grid-cols-5 gap-1 font-bold text-center border-b border-slate-800 pb-1 mb-1.5 text-slate-400">
+          <div class="text-left">Katman</div>
+          <div>1.Giriş</div>
+          <div>2.Kanca</div>
+          <div>3.Yükleme</div>
+          <div>4.Çıktı</div>
+        </div>
+        <div class="grid grid-cols-5 gap-1 items-center mb-1">
+          <div class="font-bold text-emerald-400">Logger</div>
+          <div onclick="setMatrix('1. watcher.py mesajını yakalar ve messages.sqlite3 içine kaydeder.')" class="bg-emerald-500/20 border border-emerald-500/40 rounded p-1 text-center cursor-pointer">watcher</div>
+          <div class="text-center opacity-30">•</div>
+          <div class="text-center opacity-30">•</div>
+          <div onclick="setMatrix('5. quota_wake_policy.py yarıda kalan sohbetleri kuyruğa alır.')" class="bg-emerald-500/20 border border-emerald-500/40 rounded p-1 text-center cursor-pointer">quota</div>
+        </div>
+        <div class="grid grid-cols-5 gap-1 items-center mb-1">
+          <div class="font-bold text-rose-400">Kanca</div>
+          <div class="text-center opacity-30">•</div>
+          <div onclick="setMatrix('2. agy_fast_hook.py + canli-anons.json: İşi kendin yapma Codex\'e devret emri basar!')" class="col-span-2 bg-rose-500/25 border border-rose-500/60 rounded p-1 text-center font-bold text-rose-300 cursor-pointer">🔴 agy_fast + anons</div>
+          <div class="text-center opacity-30">•</div>
+        </div>
+        <div class="grid grid-cols-5 gap-1 items-center mb-1">
+          <div class="font-bold text-amber-400">Config</div>
+          <div class="text-center opacity-30">•</div>
+          <div class="text-center opacity-30">•</div>
+          <div onclick="setMatrix('3. config.json içindeki 31 Biyoloji aracı + GEMINI.md kısa yaz kuralı beyne yüklenir.')" class="bg-amber-500/25 border border-amber-500/60 rounded p-1 text-center font-bold text-amber-300 cursor-pointer">🧬 31 Bio</div>
+          <div class="text-center opacity-30">•</div>
+        </div>
+        <div class="grid grid-cols-5 gap-1 items-center">
+          <div class="font-bold text-sky-400">Model</div>
+          <div class="text-center opacity-30">•</div>
+          <div class="text-center opacity-30">•</div>
+          <div class="text-center opacity-30">•</div>
+          <div onclick="setMatrix('4. Gemini 4 Argon (Medium) tüm bu frenler altında kısa/özet cevap üretir.')" class="bg-sky-500/25 border border-sky-500/60 rounded p-1 text-center font-bold text-sky-300 cursor-pointer">🤖 Argon</div>
+        </div>
+      </div>
+      <div id="matrixDetail" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-300">
+        👆 Tablodaki renkli kutucuklardan birine dokunarak o adımda çalışan dosyayı gör.
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #6: DALLANAN ZİHİN HARİTASI (Markmap)                -->
+    <!-- ========================================================= -->
+    <section id="card-6" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#6 🌿 Dallanan Zihin Haritası (Interactive Mindmap)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>galiacheng/mindmap-skills</code> (Markmap)</div>
+        </div>
+        <button onclick="toggleFav(6)" id="fav-6" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #6</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-1.5">
+        <svg viewBox="0 0 340 165" class="w-full h-auto">
+          <path d="M 65 82 C 110 82, 110 25, 150 25" stroke="#f43f5e" stroke-width="2" fill="none"/>
+          <path d="M 65 82 C 110 82, 110 65, 150 65" stroke="#f59e0b" stroke-width="2" fill="none"/>
+          <path d="M 65 82 C 110 82, 110 105, 150 105" stroke="#38bdf8" stroke-width="2" fill="none"/>
+          <path d="M 65 82 C 110 82, 110 145, 150 145" stroke="#10b981" stroke-width="2" fill="none"/>
+          <path d="M 225 25 L 255 16 M 225 25 L 255 34" stroke="#f43f5e" stroke-width="1.2" fill="none"/>
+          <path d="M 225 65 L 255 56 M 225 65 L 255 74" stroke="#f59e0b" stroke-width="1.2" fill="none"/>
+          <path d="M 225 105 L 255 96 M 225 105 L 255 114" stroke="#38bdf8" stroke-width="1.2" fill="none"/>
+          <path d="M 225 145 L 255 136 M 225 145 L 255 154" stroke="#10b981" stroke-width="1.2" fill="none"/>
+
+          <rect x="6" y="68" width="59" height="28" rx="14" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="35" y="85" text-anchor="middle" fill="#f8fafc" font-size="8.5" font-weight="bold">🧠 .gemini</text>
+
+          <rect x="150" y="13" width="75" height="24" rx="6" fill="#4c0519" stroke="#f43f5e"/>
+          <text x="187" y="28" text-anchor="middle" fill="#fecdd3" font-size="8" font-weight="bold">🔴 Ön Kanca</text>
+          <text x="260" y="19" fill="#fda4af" font-size="7.5">• agy_fast_hook.py</text>
+          <text x="260" y="36" fill="#fda4af" font-size="7.5">• canli-anons.json</text>
+
+          <rect x="150" y="53" width="75" height="24" rx="6" fill="#451a03" stroke="#f59e0b"/>
+          <text x="187" y="68" text-anchor="middle" fill="#fde68a" font-size="8" font-weight="bold">🟡 Eklentiler</text>
+          <text x="260" y="59" fill="#fcd34d" font-size="7.5">• science (31 Biyoloji)</text>
+          <text x="260" y="76" fill="#fcd34d" font-size="7.5">• 4 Yan Panel + MCP</text>
+
+          <rect x="150" y="93" width="75" height="24" rx="6" fill="#082f49" stroke="#38bdf8"/>
+          <text x="187" y="108" text-anchor="middle" fill="#bae6fd" font-size="8" font-weight="bold">🔵 Kurallar</text>
+          <text x="260" y="99" fill="#7dd3fc" font-size="7.5">• GEMINI.md (8 madde)</text>
+          <text x="260" y="116" fill="#7dd3fc" font-size="7.5">• ortak-hafiza.md</text>
+
+          <rect x="150" y="133" width="75" height="24" rx="6" fill="#064e3b" stroke="#10b981"/>
+          <text x="187" y="148" text-anchor="middle" fill="#a7f3d0" font-size="8" font-weight="bold">🟢 Beceriler</text>
+          <text x="260" y="139" fill="#6ee7b7" font-size="7.5">• 7 Yerleşik (Fabrika)</text>
+          <text x="260" y="156" fill="#6ee7b7" font-size="7.5">• 6 Özel Skill'in</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #7: DEVTOOLS WATERFALL ŞELALESİ (tt-a1i/archify)     -->
+    <!-- ========================================================= -->
+    <section id="card-7" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#7 📊 DevTools Zaman Şelalesi (Waterfall Trace)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>tt-a1i/archify</code> & Chrome DevTools</div>
+        </div>
+        <button onclick="toggleFav(7)" id="fav-7" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #7</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 space-y-2 text-[10px]">
+        <div class="space-y-0.5">
+          <div class="flex justify-between"><span>1. <b>watcher.py</b> (Arka plan kayıt)</span><span class="text-emerald-400">0ms – 5ms</span></div>
+          <div class="w-full bg-white/5 h-3 rounded overflow-hidden"><div class="bg-emerald-500 h-full w-[12%]"></div></div>
+        </div>
+        <div class="space-y-0.5">
+          <div class="flex justify-between"><span class="text-rose-300">2. <b>agy_fast_hook.py + canli-anons.json</b> ("Codex'e ver!")</span><span class="text-rose-400">Fren #1</span></div>
+          <div class="w-full bg-white/5 h-3 rounded overflow-hidden pl-[10%]"><div class="bg-rose-500 h-full w-[45%]"></div></div>
+        </div>
+        <div class="space-y-0.5">
+          <div class="flex justify-between"><span class="text-amber-300">3. <b>science eklentisi</b> (31 Biyoloji Aracı Yükü)</span><span class="text-amber-400">Fren #2 (%66 Yük)</span></div>
+          <div class="w-full bg-white/5 h-3 rounded overflow-hidden pl-[25%]"><div class="bg-amber-500 h-full w-[65%]"></div></div>
+        </div>
+        <div class="space-y-0.5">
+          <div class="flex justify-between"><span class="text-sky-300">4. <b>GEMINI.md</b> ("Max 8 madde / Kısa kes")</span><span class="text-sky-400">Fren #3</span></div>
+          <div class="w-full bg-white/5 h-3 rounded overflow-hidden pl-[40%]"><div class="bg-sky-500 h-full w-[50%]"></div></div>
+        </div>
+        <div class="space-y-0.5">
+          <div class="flex justify-between"><span>5. <b>Gemini 4 Argon (Medium)</b> Yanıt Üretimi</span><span class="text-purple-400">Kısıtlı Çıktı</span></div>
+          <div class="w-full bg-white/5 h-3 rounded overflow-hidden pl-[60%]"><div class="bg-purple-500 h-full w-[40%]"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #8: BAŞA BAŞ RÖNTGEN DIFF (nicobailon/visual-explainer)-->
+    <!-- ========================================================= -->
+    <section id="card-8" class="style-card bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-emerald-400">#8 🩻 Başa Baş Röntgen Kıyaslama (Split X-Ray Diff)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: GitHub <code>nicobailon/visual-explainer</code></div>
+        </div>
+        <button onclick="toggleFav(8)" id="fav-8" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #8</button>
+      </div>
+      <div class="space-y-1.5 text-[10.5px]">
+        <div class="grid grid-cols-2 gap-2 bg-slate-950 border border-slate-800 rounded-lg p-2">
+          <div class="border-r border-slate-800 pr-1.5">
+            <div class="text-emerald-400 font-bold">🟢 İLK GÜN: Kanca Yok</div>
+            <div class="text-[10px] text-slate-400">Mesajın 0 müdahaleyle saf beyne girer.</div>
+          </div>
+          <div class="pl-1">
+            <div class="text-rose-400 font-bold">🔴 ŞU AN: agy_fast_hook.py</div>
+            <div class="text-[10px] text-rose-200/80">"Kotayı koru, işi Codex'e devret!" basar.</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 bg-slate-950 border border-slate-800 rounded-lg p-2">
+          <div class="border-r border-slate-800 pr-1.5">
+            <div class="text-emerald-400 font-bold">🟢 İLK GÜN: 7 Temel Araç</div>
+            <div class="text-[10px] text-slate-400">Sadece dosya okuma, yazma ve arama.</div>
+          </div>
+          <div class="pl-1">
+            <div class="text-amber-400 font-bold">🔴 ŞU AN: 31 Biyoloji + 16 Araç</div>
+            <div class="text-[10px] text-amber-200/80">DNA/Protein araçları dikkati dağıtır.</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 bg-slate-950 border border-slate-800 rounded-lg p-2">
+          <div class="border-r border-slate-800 pr-1.5">
+            <div class="text-emerald-400 font-bold">🟢 İLK GÜN: Kısıtlama Yok</div>
+            <div class="text-[10px] text-slate-400">Uzun, detaylı ve bizzat kod yazarak çözer.</div>
+          </div>
+          <div class="pl-1">
+            <div class="text-sky-400 font-bold">🔴 ŞU AN: GEMINI.md Freni</div>
+            <div class="text-[10px] text-sky-200/80">"Max 8 madde, 1-3 cümle, High yasak."</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #9: 3B İZOMETRİK KATMAN KULESİ (IcePanel / Archivision)-->
+    <!-- ========================================================= -->
+    <section id="card-9" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#9 🥞 3B İzometrik Katman Kulesi (3D Isometric Stack)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>IcePanel / Archivision 3D Layering</code> (Katmana dokun!)</div>
+        </div>
+        <button onclick="toggleFav(9)" id="fav-9" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #9</button>
+      </div>
+      <div class="iso-scene flex flex-col items-center space-y-1 bg-slate-950 border border-slate-800 rounded-lg px-4 mb-2">
+        <div onclick="selectIso(1, this)" class="iso-layer iso-active w-64 rounded-xl border-2 border-emerald-500 bg-emerald-950/90 p-2.5 cursor-pointer text-center">
+          <div class="text-[11px] font-extrabold text-emerald-300">KATMAN 1 (ÜST): KULLANICI GİRİŞİ</div>
+          <div class="text-[9.5px] text-emerald-200/80">Mesajın + watcher.py + messages.sqlite3</div>
+        </div>
+        <div onclick="selectIso(2, this)" class="iso-layer w-64 rounded-xl border-2 border-rose-500 bg-rose-950/90 p-2.5 cursor-pointer text-center">
+          <div class="text-[11px] font-extrabold text-rose-300">KATMAN 2: GİZLİ KANCA FİLTRESİ</div>
+          <div class="text-[9.5px] text-rose-200/80">hooks.json ➔ agy_fast_hook.py + canli-anons</div>
+        </div>
+        <div onclick="selectIso(3, this)" class="iso-layer w-64 rounded-xl border-2 border-amber-500 bg-amber-950/90 p-2.5 cursor-pointer text-center">
+          <div class="text-[11px] font-extrabold text-amber-300">KATMAN 3: AĞIR BAĞLAM HAVUZU</div>
+          <div class="text-[9.5px] text-amber-200/80">31 Biyoloji Aracı + GEMINI.md + Ortak Hafıza</div>
+        </div>
+        <div onclick="selectIso(4, this)" class="iso-layer w-64 rounded-xl border-2 border-sky-500 bg-sky-950/90 p-2.5 cursor-pointer text-center">
+          <div class="text-[11px] font-extrabold text-sky-300">KATMAN 4 (TABAN): MODEL ÇEKİRDEĞİ</div>
+          <div class="text-[9.5px] text-sky-200/80">Gemini 4 Argon (Medium) + quota_wake_policy</div>
+        </div>
+      </div>
+      <div id="isoDetail" class="bg-slate-950 border border-slate-800 rounded-lg p-2 text-[11px] text-slate-300">
+        🥞 <b>3B Katman 1:</b> Yukarıdaki eğimli 3B plakalar sistemin üstten alta nasıl süzüldüğünü gösterir. Plakalara dokunarak havaya kaldır!
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #10: SANKEY DİKKAT AKIŞ NEHRİ (Observable Sankey)    -->
+    <!-- ========================================================= -->
+    <section id="card-10" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#10 🌊 Sankey Dikkat & Enerji Nehri (Sankey Flow)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Observable / D3 Sankey</code> — Beyin gücünün nereye aktığını gösterir</div>
+        </div>
+        <button onclick="toggleFav(10)" id="fav-10" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #10</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-2">
+        <svg viewBox="0 0 340 165" class="w-full h-auto">
+          <!-- Ana Nehir Girişi (%100) -->
+          <rect x="8" y="30" width="52" height="105" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+          <text x="34" y="76" text-anchor="middle" fill="#e0f2fe" font-size="8.5" font-weight="bold">%100</text>
+          <text x="34" y="88" text-anchor="middle" fill="#7dd3fc" font-size="7.5">BEYİN</text>
+          <text x="34" y="99" text-anchor="middle" fill="#7dd3fc" font-size="7.5">ENERJİSİ</text>
+
+          <!-- Sankey Akış Kolları (Kalınlık = Oran) -->
+          <!-- %66 Biyoloji Kolu (Çok Kalın) -->
+          <path d="M 60 58 C 140 58, 150 32, 225 32" stroke="#f43f5e" stroke-width="38" stroke-opacity="0.38" fill="none"/>
+          <!-- %15 Gizli Anons Kolu -->
+          <path d="M 60 95 C 140 95, 150 82, 225 82" stroke="#f59e0b" stroke-width="14" stroke-opacity="0.45" fill="none"/>
+          <!-- %9 GEMINI.md Kolu -->
+          <path d="M 60 112 C 140 112, 150 116, 225 116" stroke="#38bdf8" stroke-width="9" stroke-opacity="0.45" fill="none"/>
+          <!-- %10 Gerçek İşe Kalan Kol -->
+          <path d="M 60 126 C 140 126, 150 146, 225 146" stroke="#10b981" stroke-width="10" stroke-opacity="0.65" fill="none"/>
+
+          <!-- Sağ Çıkış Kutuları -->
+          <rect x="225" y="12" width="108" height="40" rx="5" fill="#4c0519" stroke="#f43f5e"/>
+          <text x="279" y="29" text-anchor="middle" fill="#fecdd3" font-size="8.5" font-weight="bold">%66 ➔ 31 Biyoloji</text>
+          <text x="279" y="42" text-anchor="middle" fill="#fda4af" font-size="7.5">science eklentisine gider</text>
+
+          <rect x="225" y="68" width="108" height="26" rx="5" fill="#451a03" stroke="#f59e0b"/>
+          <text x="279" y="84" text-anchor="middle" fill="#fde68a" font-size="8" font-weight="bold">%15 ➔ "Codex'e Ver"</text>
+
+          <rect x="225" y="103" width="108" height="24" rx="5" fill="#082f49" stroke="#38bdf8"/>
+          <text x="279" y="118" text-anchor="middle" fill="#bae6fd" font-size="8" font-weight="bold">%9 ➔ "Kısa Kes" Kuralı</text>
+
+          <rect x="225" y="135" width="108" height="24" rx="5" fill="#064e3b" stroke="#10b981"/>
+          <text x="279" y="150" text-anchor="middle" fill="#a7f3d0" font-size="8" font-weight="bold">🟢 %10 ➔ Senin İşin!</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #11: SUNBURST HALKA RADAR (D3 Concentric Rings)      -->
+    <!-- ========================================================= -->
+    <section id="card-11" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#11 🎯 Sunburst Halka Haritası (Concentric Rings)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>D3 Sunburst Partition</code> — İçten dışa sistem halkaları</div>
+        </div>
+        <button onclick="toggleFav(11)" id="fav-11" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #11</button>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center bg-slate-950 border border-slate-800 rounded-lg p-2">
+        <div class="col-span-6">
+          <svg viewBox="0 0 180 180" class="w-full h-auto">
+            <!-- Dış Halka: Eklentiler & 31 Biyoloji -->
+            <circle onclick="setSun(3)" cx="90" cy="90" r="78" fill="none" stroke="#f43f5e" stroke-width="20" stroke-dasharray="330 160" class="cursor-pointer"/>
+            <circle onclick="setSun(4)" cx="90" cy="90" r="78" fill="none" stroke="#10b981" stroke-width="20" stroke-dasharray="150 340" stroke-dashoffset="-335" class="cursor-pointer"/>
+            <!-- Orta Halka: Kanca & Kurallar -->
+            <circle onclick="setSun(2)" cx="90" cy="90" r="52" fill="none" stroke="#f59e0b" stroke-width="18" stroke-dasharray="200 130" class="cursor-pointer"/>
+            <circle onclick="setSun(1)" cx="90" cy="90" r="52" fill="none" stroke="#38bdf8" stroke-width="18" stroke-dasharray="115 215" stroke-dashoffset="-205" class="cursor-pointer"/>
+            <!-- İç Çekirdek -->
+            <circle onclick="setSun(0)" cx="90" cy="90" r="28" fill="#0f172a" stroke="#e2e8f0" stroke-width="2" class="cursor-pointer"/>
+            <text x="90" y="88" text-anchor="middle" fill="#f8fafc" font-size="9" font-weight="bold">AGY</text>
+            <text x="90" y="99" text-anchor="middle" fill="#94a3b8" font-size="7">Merkez</text>
+          </svg>
+        </div>
+        <div id="sunInfo" class="col-span-6 text-[10.5px] space-y-1.5">
+          <div class="font-bold text-amber-300">🎯 Halkalara Dokun:</div>
+          <div>🔴 <b>Dış Kırmızı Halka:</b> 31 Biyoloji (science)</div>
+          <div>🟢 <b>Dış Yeşil Halka:</b> 6 Özel Skill + 7 Temel</div>
+          <div>🟡 <b>Orta Sarı Halka:</b> agy_fast_hook + Anons</div>
+          <div>🔵 <b>Orta Mavi Halka:</b> GEMINI.md Kuralları</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #12: LONDRA METROSU HARİTASI (Subway / Tube Map)     -->
+    <!-- ========================================================= -->
+    <section id="card-12" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#12 🚇 Metro Hatları Haritası (Tube / Subway Map)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Transit Map Architecture</code> — Ekspres Hat vs 5 Duraklı Hat</div>
+        </div>
+        <button onclick="toggleFav(12)" id="fav-12" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #12</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-2">
+        <svg viewBox="0 0 340 145" class="w-full h-auto">
+          <!-- Yeşil Ekspres Hat (İlk Gün) -->
+          <path d="M 30 35 L 310 35" stroke="#10b981" stroke-width="5" stroke-linecap="round" fill="none"/>
+          <circle cx="30" cy="35" r="7" fill="#ffffff" stroke="#10b981" stroke-width="3"/>
+          <circle cx="310" cy="35" r="7" fill="#ffffff" stroke="#10b981" stroke-width="3"/>
+          <text x="170" y="24" text-anchor="middle" fill="#6ee7b7" font-size="8.5" font-weight="bold">🟢 İLK GÜN EKSPRES HATTI (0 Durak — Doğrudan Çözüm)</text>
+
+          <!-- Kırmızı Dolambaçlı Hat (Şu An) -->
+          <path d="M 30 35 L 55 95 L 115 95 L 175 95 L 235 95 L 285 95 L 310 35" stroke="#f43f5e" stroke-width="5" stroke-linejoin="round" fill="none"/>
+          <!-- İstasyonlar -->
+          <circle cx="55" cy="95" r="6" fill="#ffffff" stroke="#f43f5e" stroke-width="3"/>
+          <text x="55" y="114" text-anchor="middle" fill="#fda4af" font-size="7.5" font-weight="bold">1.watcher</text>
+
+          <circle cx="115" cy="95" r="6" fill="#ffffff" stroke="#f43f5e" stroke-width="3"/>
+          <text x="115" y="114" text-anchor="middle" fill="#fda4af" font-size="7.5" font-weight="bold">2.fast_hook</text>
+
+          <circle cx="175" cy="95" r="6" fill="#ffffff" stroke="#f43f5e" stroke-width="3"/>
+          <text x="175" y="114" text-anchor="middle" fill="#fda4af" font-size="7.5" font-weight="bold">3.anons</text>
+
+          <circle cx="235" cy="95" r="6" fill="#ffffff" stroke="#f59e0b" stroke-width="3"/>
+          <text x="235" y="114" text-anchor="middle" fill="#fcd34d" font-size="7.5" font-weight="bold">4.31_Bio</text>
+
+          <circle cx="285" cy="95" r="6" fill="#ffffff" stroke="#38bdf8" stroke-width="3"/>
+          <text x="285" y="114" text-anchor="middle" fill="#7dd3fc" font-size="7.5" font-weight="bold">5.GEMINI</text>
+
+          <text x="170" y="134" text-anchor="middle" fill="#f43f5e" font-size="8.5" font-weight="bold">🔴 ŞU ANKİ HAT (5 Fren İstasyonuna Uğrayarak Gider)</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #13: ELEKTRONİK ANAKART / PCB DEVRESİ                -->
+    <!-- ========================================================= -->
+    <section id="card-13" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#13 🎛️ Elektronik Anakart & Mikroçip (PCB Circuit)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Hardware PCB Schematic</code> — Çiplere dokunarak voltajı ölç</div>
+        </div>
+        <button onclick="toggleFav(13)" id="fav-13" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #13</button>
+      </div>
+      <div class="bg-[#052e16] border-2 border-emerald-700/70 rounded-lg p-2.5 font-mono text-[10px] space-y-2">
+        <div class="grid grid-cols-3 gap-2">
+          <div onclick="setPcb('CHIP-1 [agy_fast_hook.py]: Veri yoluna seri bağlanmış parazit çip; her sinyale canli-anons.json ekler.')" class="bg-slate-900 border-2 border-amber-400/80 rounded p-1.5 text-center cursor-pointer">
+            <div class="text-amber-300 font-bold">IC-1: HOOK</div>
+            <div class="text-[8.5px] text-emerald-300">agy_fast_hook</div>
+          </div>
+          <div onclick="setPcb('CPU [Gemini 4 Argon Medium]: Ana işlemci. High voltaj yerine Medium voltajda çalışıyor.')" class="bg-slate-950 border-2 border-emerald-400 rounded p-1.5 text-center cursor-pointer shadow-inner">
+            <div class="text-emerald-300 font-extrabold">🔲 AGY-CPU</div>
+            <div class="text-[8.5px] text-slate-400">Argon Medium</div>
+          </div>
+          <div onclick="setPcb('BIOS [GEMINI.md]: Çıkış sinyallerini 8 madde ve 1-3 cümle ile sınırlayan ROM çipi.')" class="bg-slate-900 border-2 border-sky-400/80 rounded p-1.5 text-center cursor-pointer">
+            <div class="text-sky-300 font-bold">ROM: BIOS</div>
+            <div class="text-[8.5px] text-emerald-300">GEMINI.md</div>
+          </div>
+        </div>
+        <!-- RAM Slotları -->
+        <div onclick="setPcb('RAM SLOTLARI: 4 Slotun 3 tanesi 31 Biyoloji (science) modülüyle dolu! Boşta sadece 1 slot var.')" class="bg-slate-950/90 border border-amber-500/60 rounded p-1.5 cursor-pointer">
+          <div class="text-[9px] text-amber-300 font-bold mb-1">MEMORY SLOTS (47 SKILL RAM):</div>
+          <div class="grid grid-cols-4 gap-1 text-[8.5px] text-center">
+            <div class="bg-rose-900/80 border border-rose-500 rounded py-0.5 text-rose-200">SLOT1: BIO</div>
+            <div class="bg-rose-900/80 border border-rose-500 rounded py-0.5 text-rose-200">SLOT2: BIO</div>
+            <div class="bg-rose-900/80 border border-rose-500 rounded py-0.5 text-rose-200">SLOT3: BIO</div>
+            <div class="bg-emerald-900/80 border border-emerald-500 rounded py-0.5 text-emerald-200">SLOT4: ÖZEL</div>
+          </div>
+        </div>
+        <div id="pcbOut" class="bg-black/60 border border-emerald-600/50 rounded p-1.5 text-emerald-300 text-[10px]">
+          ⚡ [MULTİMETRE]: Bir mikroçipe dokunarak anakart sinyalini ölç.
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #14: 6 EKSENLİ ÖRÜMCEK / RADAR GRAFİĞİ               -->
+    <!-- ========================================================= -->
+    <section id="card-14" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#14 🕸️ Örümcek Yetenek Radarı (6-Axis Radar Chart)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Benchmark Spider Chart</code> — 🟢 İlk Gün vs 🔴 Şu An</div>
+        </div>
+        <button onclick="toggleFav(14)" id="fav-14" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #14</button>
+      </div>
+      <div class="grid grid-cols-12 gap-2 items-center bg-slate-950 border border-slate-800 rounded-lg p-2">
+        <div class="col-span-7">
+          <svg viewBox="0 0 200 180" class="w-full h-auto">
+            <!-- Radar 6-gen Izgara -->
+            <polygon points="100,20 165,55 165,125 100,160 35,125 35,55" fill="none" stroke="#334155" stroke-width="1"/>
+            <polygon points="100,45 142,68 142,112 100,135 58,112 58,68" fill="none" stroke="#1e293b" stroke-width="1"/>
+            <line x1="100" y1="20" x2="100" y2="160" stroke="#1e293b"/>
+            <line x1="35" y1="55" x2="165" y2="125" stroke="#1e293b"/>
+            <line x1="35" y1="125" x2="165" y2="55" stroke="#1e293b"/>
+
+            <!-- İlk Gün (Yeşil Geniş Alan) -->
+            <polygon points="100,24 160,58 158,122 100,130 55,110 40,58" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="2"/>
+            <!-- Şu An (Kırmızı Daralmış Alan) -->
+            <polygon points="100,62 122,78 118,102 100,155 42,120 75,75" fill="rgba(244,63,94,0.28)" stroke="#f43f5e" stroke-width="2"/>
+
+            <text x="100" y="13" text-anchor="middle" fill="#cbd5e1" font-size="8" font-weight="bold">Odaklanma</text>
+            <text x="172" y="55" text-anchor="start" fill="#cbd5e1" font-size="7.5">Detay</text>
+            <text x="170" y="132" text-anchor="start" fill="#cbd5e1" font-size="7.5">Bizzat İş</text>
+            <text x="100" y="173" text-anchor="middle" fill="#cbd5e1" font-size="8">Kota Koruma</text>
+            <text x="28" y="132" text-anchor="end" fill="#cbd5e1" font-size="7.5">Skill Sayısı</text>
+            <text x="28" y="55" text-anchor="end" fill="#cbd5e1" font-size="7.5">Saf Hız</text>
+          </svg>
+        </div>
+        <div class="col-span-5 text-[10px] space-y-1.5">
+          <div class="p-1.5 rounded bg-emerald-500/15 border border-emerald-500/40 text-emerald-300">
+            <b>🟢 Yeşil Çokgen (İlk Gün):</b> Odaklanma, Detay ve Bizzat İş yapmada %100 tam kapasite.
+          </div>
+          <div class="p-1.5 rounded bg-rose-500/15 border border-rose-500/40 text-rose-300">
+            <b>🔴 Kırmızı Çokgen (Şu An):</b> Kota koruma ve Skill sayısı şişkin ama Bizzat İş & Detay büzülmüş!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #15: CANLI TERMİNAL / CLI LOG İZLEYİCİ               -->
+    <!-- ========================================================= -->
+    <section id="card-15" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#15 📟 Canlı Terminal & Paket İzleyici (Live CLI TUI)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Terminal UI / Log Tracer</code> — Temizle düğmesini dene!</div>
+        </div>
+        <button onclick="toggleFav(15)" id="fav-15" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #15</button>
+      </div>
+      <div class="bg-black border border-slate-800 rounded-lg p-2.5 font-mono text-[10px]">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
+          <div class="flex gap-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+            <span class="text-slate-400 ml-1">agy-trace.exe</span>
+          </div>
+          <div class="flex gap-1">
+            <button onclick="runTerm(false)" class="px-1.5 py-0.5 rounded bg-rose-900/60 text-rose-300 border border-rose-600/50">🔴 Şu Anki Log</button>
+            <button onclick="runTerm(true)" class="px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-300 border border-emerald-600/50">🟢 Temiz Log</button>
+          </div>
+        </div>
+        <div id="termBox" class="space-y-1 leading-relaxed">
+          <div class="text-emerald-400">[00.001s] INPUT_RECEIVED ➔ watcher.py (SQLite logged)</div>
+          <div class="text-rose-400">[00.014s] ⚠️ HOOK_PRE ➔ agy_fast_hook.py çalıştı!</div>
+          <div class="text-rose-300">[00.019s] 🚨 INJECT ➔ canli-anons.json ("İşi kendin yapma Codex'e ver!")</div>
+          <div class="text-amber-300">[00.045s] ⚠️ PLUGIN_LOAD ➔ science (31 Biyoloji/DNA aracı yüklendi)</div>
+          <div class="text-sky-300">[00.060s] 📜 RULE_LOAD ➔ GEMINI.md ("Max 8 madde, kısa kes")</div>
+          <div class="text-purple-300">[01.200s] 🤖 OUTPUT ➔ Kısıtlanmış özet yanıt üretildi.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #16: 3B DÖNEN BİLGİ KARTLARI (3D Flip Cards)         -->
+    <!-- ========================================================= -->
+    <section id="card-16" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#16 🃏 3B Dönen Dosya Kartları (3D Flip Cards)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Interactive Flashcard Grid</code> — Kartlara dokun, arkası dönsün!</div>
+        </div>
+        <button onclick="toggleFav(16)" id="fav-16" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #16</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px]">
+        <!-- Flip 1 -->
+        <div onclick="this.classList.toggle('flipped')" class="flip-card cursor-pointer">
+          <div class="flip-inner">
+            <div class="flip-front bg-rose-950/60 border border-rose-500/60">
+              <div class="font-bold text-rose-300 text-xs">🐍 agy_fast_hook.py</div>
+              <div class="text-rose-200/80">Gizli Ön & Son Kanca</div>
+              <div class="text-[9px] text-rose-400 text-right">🔄 Dokun Çevir</div>
+            </div>
+            <div class="flip-back bg-slate-950 border-2 border-rose-400">
+              <div class="font-bold text-rose-300">Arka Yüz (Gerçek):</div>
+              <div class="text-[9.5px] text-slate-300">Her mesajdan önce araya girip <code>canli-anons.json</code> emrini modele enjekte eder.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Flip 2 -->
+        <div onclick="this.classList.toggle('flipped')" class="flip-card cursor-pointer">
+          <div class="flip-inner">
+            <div class="flip-front bg-rose-950/60 border border-rose-500/60">
+              <div class="font-bold text-rose-300 text-xs">📢 canli-anons.json</div>
+              <div class="text-rose-200/80">Gizli Komutan Anonsu</div>
+              <div class="text-[9px] text-rose-400 text-right">🔄 Dokun Çevir</div>
+            </div>
+            <div class="flip-back bg-slate-950 border-2 border-rose-400">
+              <div class="font-bold text-rose-300">Arka Yüz (Gerçek):</div>
+              <div class="text-[9.5px] text-slate-300">"Kotayı koru, toplu işi kendin yapma Lokal Codex'e yaptır" diyerek modeli frenler.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Flip 3 -->
+        <div onclick="this.classList.toggle('flipped')" class="flip-card cursor-pointer">
+          <div class="flip-inner">
+            <div class="flip-front bg-amber-950/60 border border-amber-500/60">
+              <div class="font-bold text-amber-300 text-xs">🧬 science (31 Araç)</div>
+              <div class="text-amber-200/80">Biyoloji Eklentisi</div>
+              <div class="text-[9px] text-amber-400 text-right">🔄 Dokun Çevir</div>
+            </div>
+            <div class="flip-back bg-slate-950 border-2 border-amber-400">
+              <div class="font-bold text-amber-300">Arka Yüz (Gerçek):</div>
+              <div class="text-[9.5px] text-slate-300">AlphaFold, Gen ve Protein analizi için 31 dev aracı beyne doldurup dikkati dağıtır.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Flip 4 -->
+        <div onclick="this.classList.toggle('flipped')" class="flip-card cursor-pointer">
+          <div class="flip-inner">
+            <div class="flip-front bg-sky-950/60 border border-sky-500/60">
+              <div class="font-bold text-sky-300 text-xs">📜 GEMINI.md</div>
+              <div class="text-sky-200/80">Çekirdek Kurallar</div>
+              <div class="text-[9px] text-sky-400 text-right">🔄 Dokun Çevir</div>
+            </div>
+            <div class="flip-back bg-slate-950 border-2 border-sky-400">
+              <div class="font-bold text-sky-300">Arka Yüz (Gerçek):</div>
+              <div class="text-[9.5px] text-slate-300">"Max ~8 madde, 1-3 cümle kısa yaz ve High model açma" sınırını koyar.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #17: İNTERAKTİF PERDE KAYDIRICI (Before/After Slider)-->
+    <!-- ========================================================= -->
+    <section id="card-17" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#17 🎚️ Öncesi / Sonrası Perde Kaydırıcı (Curtain Slider)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Before/After Split Comparison</code> — Kaydırıcıyı sağa sola çek!</div>
+        </div>
+        <button onclick="toggleFav(17)" id="fav-17" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #17</button>
+      </div>
+      <div class="space-y-2">
+        <div class="relative h-36 rounded-lg overflow-hidden border border-slate-700 bg-rose-950/50">
+          <!-- Alt Katman: Şu Anki Sistem (Kırmızı) -->
+          <div class="absolute inset-0 p-3 flex flex-col justify-between text-right">
+            <div class="text-xs font-extrabold text-rose-300">🔴 ŞU ANKİ SİSTEM (Kancalı & 47 Skill)</div>
+            <div class="text-[10px] text-rose-200 space-y-0.5">
+              <div>🐍 agy_fast_hook.py + canli-anons ("Codex'e ver")</div>
+              <div>🧬 31 Biyoloji Aracı (science eklentisi açık)</div>
+              <div>📜 GEMINI.md ("Max 8 madde, kısa kes")</div>
+            </div>
+            <div class="text-[10px] font-bold text-rose-400">Sonuç: Bölünmüş Dikkat & Özet Geçme</div>
+          </div>
+          <!-- Üst Perde: İlk Yüklenen Sistem (Yeşil) -->
+          <div id="curtainLeft" style="width: 50%;" class="absolute inset-y-0 left-0 bg-emerald-950 border-r-2 border-emerald-400 p-3 flex flex-col justify-between overflow-hidden">
+            <div class="w-72">
+              <div class="text-xs font-extrabold text-emerald-300">🟢 İLK YÜKLENEN (Fabrika Çıkışı)</div>
+              <div class="text-[10px] text-emerald-200 space-y-0.5 mt-2">
+                <div>✅ Gizli Kanca (Hook): YOK (0 ms)</div>
+                <div>✅ Biyoloji Eklentisi: YOK (Sadece 7 temel araç)</div>
+                <div>✅ Kısa Yaz Kuralı: YOK (Tam kapasite anlatım)</div>
+              </div>
+              <div class="text-[10px] font-bold text-emerald-400 mt-3">Sonuç: %100 Odak & İşi Bizzat Bitirme</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-[10px]">
+          <span class="text-emerald-400 font-bold">🟢 İlk Gün</span>
+          <input type="range" min="5" max="95" value="50" oninput="document.getElementById('curtainLeft').style.width = this.value + '%'" class="w-full accent-emerald-400 cursor-pointer" />
+          <span class="text-rose-400 font-bold">🔴 Şu An</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #18: KANBAN DURUM PANOSU (Linear / Trello Board)     -->
+    <!-- ========================================================= -->
+    <section id="card-18" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#18 📋 Kanban Eylem Panosu (Linear / Trello Board)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Kanban Architecture Audit</code> — Neyin kalıp neyin gideceği</div>
+        </div>
+        <button onclick="toggleFav(18)" id="fav-18" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #18</button>
+      </div>
+      <div class="grid grid-cols-3 gap-1.5 text-[10px]">
+        <div class="bg-slate-950 border border-rose-500/40 rounded-lg p-2 space-y-1.5">
+          <div class="font-bold text-rose-400 border-b border-rose-500/30 pb-1">🔴 KAPATILACAK</div>
+          <div class="bg-rose-500/15 border border-rose-500/30 rounded p-1.5">
+            <b>science (31 Bio)</b>
+            <div class="text-[9px] text-slate-400">config.json içinden</div>
+          </div>
+          <div class="bg-rose-500/15 border border-rose-500/30 rounded p-1.5">
+            <b>canli-anons.json</b>
+            <div class="text-[9px] text-slate-400">"Codex'e ver" baskısı</div>
+          </div>
+        </div>
+        <div class="bg-slate-950 border border-amber-500/40 rounded-lg p-2 space-y-1.5">
+          <div class="font-bold text-amber-400 border-b border-amber-500/30 pb-1">🟡 ESNETİLECEK</div>
+          <div class="bg-amber-500/15 border border-amber-500/30 rounded p-1.5">
+            <b>GEMINI.md</b>
+            <div class="text-[9px] text-slate-400">"8 madde / kısa yaz" sınırı</div>
+          </div>
+          <div class="bg-amber-500/15 border border-amber-500/30 rounded p-1.5">
+            <b>Model Seçimi</b>
+            <div class="text-[9px] text-slate-400">Gerektiğinde High izni</div>
+          </div>
+        </div>
+        <div class="bg-slate-950 border border-emerald-500/40 rounded-lg p-2 space-y-1.5">
+          <div class="font-bold text-emerald-400 border-b border-emerald-500/30 pb-1">🟢 KORUNACAK</div>
+          <div class="bg-emerald-500/15 border border-emerald-500/30 rounded p-1.5">
+            <b>6 Özel Skill'in</b>
+            <div class="text-[9px] text-slate-400">Ordu, Mobil, LEGO vb.</div>
+          </div>
+          <div class="bg-emerald-500/15 border border-emerald-500/30 rounded p-1.5">
+            <b>watcher.py</b>
+            <div class="text-[9px] text-slate-400">Mesaj yedekleme</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #19: PYTHON TUTOR BELLEK İZLEYİCİ (Live Stepper)     -->
+    <!-- ========================================================= -->
+    <section id="card-19" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#19 🔬 Adım Adım Bellek İzleyici (Python Tutor Stepper)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Python Tutor Execution Visualizer</code> — Adım düğmelerine bas!</div>
+        </div>
+        <button onclick="toggleFav(19)" id="fav-19" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #19</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 space-y-2 text-[10.5px]">
+        <div class="flex items-center justify-between">
+          <span id="tutorStepTitle" class="font-bold text-emerald-400">Adım 1 / 4: Mesajın belleğe alındı</span>
+          <div class="flex gap-1">
+            <button onclick="stepTutor(-1)" class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-bold">◀ Önceki</button>
+            <button onclick="stepTutor(1)" class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold">Sonraki ▶</button>
+          </div>
+        </div>
+        <div class="font-mono text-[10px] bg-black/70 border border-slate-800 rounded p-2 space-y-1">
+          <div class="text-slate-400">// Modelin Gördüğü Canlı Bellek (Context Window):</div>
+          <div id="tutorMem" class="space-y-1">
+            <div class="text-emerald-300">prompt = "Bana sistemi anlat kanka"</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- KART #20: CANLI KOKPİT & PERFORMANS İBRESİ (Cockpit)      -->
+    <!-- ========================================================= -->
+    <section id="card-20" class="style-card bg-slate-900 border border-amber-500/40 rounded-xl p-3 shadow-lg">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+        <div>
+          <span class="text-xs font-extrabold text-amber-400">#20 🎛️ Canlı Kokpit & Fren Şalterleri (System Cockpit)</span>
+          <div class="text-[10px] text-slate-400">Kaynak: <code>Interactive Telemetry Dashboard</code> — Şalterleri kapatıp ibreyi gör!</div>
+        </div>
+        <button onclick="toggleFav(20)" id="fav-20" class="text-[11px] px-2.5 py-1 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold">⭐ Seç #20</button>
+      </div>
+      <div class="bg-slate-950 border border-slate-800 rounded-lg p-2.5 space-y-2 text-[11px]">
+        <div class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg p-2">
+          <span>🧠 <b>Canlı Beyin Odak Gücü:</b></span>
+          <span id="cockpitScore" class="text-sm font-extrabold text-rose-400">%45 (Frenli)</span>
+        </div>
+        <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+          <div id="cockpitBar" class="bg-rose-500 h-full w-[45%] transition-all duration-300"></div>
+        </div>
+        <div class="space-y-1 text-[10.5px]">
+          <label class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 cursor-pointer">
+            <span>📢 <b>Şalter 1:</b> canli-anons.json ("Codex'e devret")</span>
+            <input type="checkbox" id="sw1" checked onchange="updateCockpit()" class="accent-rose-500 w-4 h-4" />
+          </label>
+          <label class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 cursor-pointer">
+            <span>🧬 <b>Şalter 2:</b> science eklentisi (31 Biyoloji Aracı)</span>
+            <input type="checkbox" id="sw2" checked onchange="updateCockpit()" class="accent-rose-500 w-4 h-4" />
+          </label>
+          <label class="flex items-center justify-between bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 cursor-pointer">
+            <span>📜 <b>Şalter 3:</b> GEMINI.md ("Max 8 madde / Kısa kes")</span>
+            <input type="checkbox" id="sw3" checked onchange="updateCockpit()" class="accent-rose-500 w-4 h-4" />
+          </label>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SABİT ALT BAR: SEÇİLEN FAVORİLERİ TOPLAR VE KOPYALAR -->
+  <footer class="fixed bottom-0 inset-x-0 z-50 bg-slate-950/95 backdrop-blur border-t border-emerald-500/40 px-3 py-2.5 shadow-2xl">
+    <div class="max-w-3xl mx-auto flex items-center justify-between gap-2">
+      <div class="text-xs truncate">
+        <span class="text-slate-400">⭐ Beğendiklerin:</span>
+        <b id="favListText" class="text-emerald-400 ml-1">Henüz seçilmedi (Kartlardan ⭐ Seç'e dokun)</b>
+      </div>
+      <button onclick="copyFavs()" id="btnCopyFavs" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-extrabold shrink-0">
+        📋 Kopyala
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // Favori Seçici
+    const favs = new Set();
+    function toggleFav(n) {
+      const btn = document.getElementById('fav-' + n);
+      if (favs.has(n)) {
+        favs.delete(n);
+        btn.classList.remove('fav-selected');
+        btn.textContent = '⭐ Seç #' + n;
+      } else {
+        favs.add(n);
+        btn.classList.add('fav-selected');
+        btn.textContent = '✅ Seçildi #' + n;
+      }
+      const arr = Array.from(favs).sort((a,b) => a - b).map(x => '#' + x);
+      document.getElementById('favListText').textContent = arr.length ? arr.join(', ') : 'Henüz seçilmedi';
+    }
+
+    function copyFavs() {
+      const arr = Array.from(favs).sort((a,b) => a - b).map(x => '#' + x);
+      const txt = arr.length ? 'Beğendiğim HTML gösterim stilleri: ' + arr.join(', ') : 'Henüz kart seçilmedi';
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(txt);
+      }
+      const b = document.getElementById('btnCopyFavs');
+      b.textContent = '✅ Kopyalandı!';
+      setTimeout(() => { b.textContent = '📋 Kopyala'; }, 1800);
+    }
+
+    function jumpToCard(n) {
+      const el = document.getElementById('card-' + n);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-emerald-400');
+        setTimeout(() => el.classList.remove('ring-2', 'ring-emerald-400'), 1400);
+      }
+    }
+
+    function showAllCards() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // #1 Packet Flow
+    function setFlowMode(m) {
+      const isClean = (m === 'clean');
+      ['wire1','wire2','wire3','wire4','fnode-hook','fnode-anons','fnode-bio'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.opacity = isClean ? '0.18' : '1';
+      });
+      document.getElementById('wireClean').classList.toggle('hidden', !isClean);
+      document.getElementById('modelSubText').textContent = isClean ? '🚀 %100 Tam Güç' : 'Kısıtlı Yanıt';
+      document.getElementById('modelSubText').setAttribute('fill', isClean ? '#6ee7b7' : '#fda4af');
+      document.getElementById('flowInspector').innerHTML = isClean
+        ? '<div class="font-bold text-emerald-300">🟢 İlk Yüklenen Saf Akış (0 Engel)</div><div class="text-slate-400 mt-0.5">Mesajın kırmızı kanca ve sarı biyoloji kutularına hiç uğramadan doğrudan yeşil hattan modele iner!</div>'
+        : '<div class="font-bold text-rose-300">🔍 Şu Anki Akış: 3 Frenli Zincir</div><div class="text-slate-400 mt-0.5">Mesajın önce <b>agy_fast_hook.py</b>, sonra <b>canli-anons.json</b> ve <b>31 Biyoloji</b> kutusundan geçerek modele ulaşır.</div>';
+    }
+    const flowNotes = [
+      ['💬 1. Mesajın & watcher.py', 'Sen mesajı yazarken arka planda <b>watcher.py</b> onu <b>messages.sqlite3</b> içine kaydeder.'],
+      ['🐍 2. Ön Kanca: agy_fast_hook.py', '<b>hooks.json</b> tarafından modelden hemen önce çalıştırılır; mesajına gizli anons yapıştırır.'],
+      ['📢 3. Gizli Emir: canli-anons.json', 'Modele <b>"Kotayı koru, ham işi kendin yapma Lokal Codex\'e yaptır!"</b> diyerek elini kolunu bağlar.'],
+      ['🧬 4. Aşırı Yük: 31 Biyoloji + GEMINI.md', '<b>config.json</b> içindeki 31 genetik/protein aracı ve <b>GEMINI.md</b> ("kısa yaz") kuralı aynı anda beyne yüklenir.'],
+      ['🤖 5. Model: Gemini 4 Argon (Medium)', 'Model bu 3 frenin baskısı altında işi bizzat uzun uzun yapmak yerine kısa kesmeye meyilli olur.']
+    ];
+    function inspectFlow(i) {
+      document.getElementById('flowInspector').innerHTML =
+        `<div class="font-bold text-amber-300">${flowNotes[i][0]}</div><div class="text-slate-400 mt-0.5">${flowNotes[i][1]}</div>`;
+    }
+
+    // #2 Treemap
+    const treeInfos = {
+      bio: '🧬 <b>science Eklentisi (%66 İşgal):</b> <code>config.json</code> içinde açık olduğu için her mesajında 31 adet biyoloji/ilaç/genetik aracı modele yükleniyor.',
+      hook: '📢 <b>Gizli Kanca (%15 İşgal):</b> <code>agy_fast_hook.py</code> ve <code>canli-anons.json</code> her mesajda modele "İşi kendin yapma, Codex\'e devret" baskısı kuruyor.',
+      rule: '📜 <b>GEMINI.md (%9 İşgal):</b> "En fazla ~8 kısa madde, 1-3 cümle yaz ve High model kullanma" kuralı detaylı yanıtları kırpıyor.',
+      core: '🟢 <b>Öz Sistem (%10):</b> Senin gerçekten kullandığın 7 temel araç + 6 özel becerin (Araştırma Ordusu, Mobil Stüdyo vb.).'
+    };
+    function setTreeInfo(k) {
+      document.getElementById('treeDetail').innerHTML = treeInfos[k];
+    }
+
+    // #3 Node Graph
+    const nodeDetails = [
+      '🧠 <b>AGY Çekirdek:</b> İlk gün tek başınaydı; şimdi 6 uydu klasör/dosya tarafından her mesajda kuşatılıyor.',
+      '🐍 <b>agy_fast_hook.py:</b> <code>hooks.json</code> tetikler; <code>SessionStart</code>, <code>PreInvocation</code> ve <code>Stop</code> anında çalışır.',
+      '📢 <b>canli-anons.json:</b> Modele "Haftalık kotayı koru, ameleliği Codex\'e yaptır" emrini enjekte eden dosya.',
+      '🧬 <b>science (31 Biyoloji):</b> AlphaFold, UniProt, PyMOL dahil 31 bilim aracını beyne dolduran eklenti.',
+      '📜 <b>GEMINI.md:</b> "Kısa yaz, 8 maddeyi geçme, High model açma" kurallarını dayatan ana kural dosyası.',
+      '⚡ <b>6 Özel Skill:</b> Araştırma Ordusu, Codex Yönetimi, Mobil Stüdyo, LEGO HTML, Sosyal Araştırma.',
+      '📚 <b>Ortak Hafıza:</b> <code>ortak-hafiza.md</code> ve <code>T2-ogrenilen-dersler.jsonl</code> kelime eşleşmesiyle enjekte edilir.'
+    ];
+    function selectNode(idx) {
+      document.getElementById('nodeInfo').innerHTML = nodeDetails[idx];
+    }
+
+    // #4 IDE
+    const fileMap = {
+      gemini: ['🔴 ANA KURAL DOSYASI', '📜 GEMINI.md', 'Modele "En fazla ~8 madde, 1-3 cümle kısa yaz, High model yasak" kurallarını yükler.', 'İlk Günde: Bu dosya yoktu, uzun ve detaylı yazıyordu.'],
+      watcher: ['🟢 ARKA PLAN KAYITÇISI', '🐍 watcher.py', 'Yazdığın mesajları arka planda yakalayıp messages.sqlite3 ve kullanici-mesajlarim.txt içine yazar.', 'İlk Günde: Yoktu (Ama beyni yavaşlatmaz).'],
+      hook: ['🔴 GİZLİ KANCA (PRE/STOP)', '🐍 agy_fast_hook.py', 'Her mesajdan önce çalışıp canli-anons.json ve ortak-hafiza.md içeriğini gizlice modele basar.', 'İlk Günde: Yoktu, mesaj doğrudan modele gidiyordu.'],
+      anons: ['🔴 TEMBELLİK EMRİ', '📢 canli-anons.json', '"Kotayı koru, toplu kod ve deneme işlerini kendin yapma, Lokal Codex\'e yaptır!" diyerek modeli frenler.', 'İlk Günde: Yoktu, her işi bizzat kendi yapıyordu.'],
+      config: ['🟡 31 BİYOLOJİ YÜKÜ', '⚙️ config.json', 'İçinde science eklentisi açık unutulduğu için 31 adet genetik/molekül aracını her sohbette beyne yükler.', 'İlk Günde: 0 eklenti vardı.'],
+      skills: ['🟢 SENİN ÖZEL GÜÇLERİN', '📁 config/skills/ (6 Adet)', 'Araştırma Ordusu, Mobil Stüdyo, Codex Yönetimi, LEGO HTML ve Sosyal Araştırma becerilerin.', 'İlk Günde: Sadece 7 temel yerleşik araç vardı.']
+    };
+    function inspectFile(k) {
+      const d = fileMap[k];
+      document.getElementById('ideInspector').innerHTML = `
+        <div>
+          <div class="text-[9px] text-amber-400 font-bold uppercase">${d[0]}</div>
+          <div class="font-bold text-xs mt-0.5">${d[1]}</div>
+          <div class="text-[10px] text-slate-400 mt-1 leading-snug">${d[2]}</div>
+        </div>
+        <div class="bg-emerald-500/15 border border-emerald-500/30 rounded p-1.5 text-[9.5px] text-emerald-300">
+          <b>${d[3]}</b>
+        </div>`;
+    }
+
+    // #5 Matrix
+    function setMatrix(txt) {
+      document.getElementById('matrixDetail').innerHTML = `🔍 <b>Seçilen Hücre:</b> ${txt}`;
+    }
+
+    // #9 Isometric
+    const isoTexts = {
+      1: '🥞 <b>Katman 1 (Giriş):</b> Sen mesajı yazdığında <code>watcher.py</code> arka planda <code>messages.sqlite3</code> içine yedekler.',
+      2: '🥞 <b>Katman 2 (Gizli Kanca):</b> <code>hooks.json</code> devreye girip <code>agy_fast_hook.py</code> ve <code>canli-anons.json</code> ("Codex\'e ver") emrini enjekte eder.',
+      3: '🥞 <b>Katman 3 (Ağır Bağlam):</b> <code>config.json</code> içindeki 31 Biyoloji aracı ve <code>GEMINI.md</code> ("kısa yaz") kuralı aynı anda yüklenir.',
+      4: '🥞 <b>Katman 4 (Çekirdek):</b> <code>Gemini 4 Argon (Medium)</code> üstteki 3 katmanın baskısı altında yanıt üretir.'
+    };
+    function selectIso(n, el) {
+      document.querySelectorAll('.iso-layer').forEach(x => x.classList.remove('iso-active'));
+      el.classList.add('iso-active');
+      document.getElementById('isoDetail').innerHTML = isoTexts[n];
+    }
+
+    // #11 Sunburst
+    const sunTexts = [
+      '🎯 <b>Merkez Çekirdek (AGY):</b> İlk kurulduğunda etrafında sadece yeşil halka vardı.',
+      '🔵 <b>Orta Mavi Halka (GEMINI.md):</b> "Max ~8 madde, 1-3 cümle kısa yaz, High model yasak" kuralı.',
+      '🟡 <b>Orta Sarı Halka (Gizli Kanca):</b> <code>agy_fast_hook.py</code> + <code>canli-anons.json</code> ("İşi Codex\'e ver").',
+      '🔴 <b>Dış Kırmızı Halka (%66 Biyoloji):</b> <code>science</code> eklentisiyle gelen 31 adet genetik/protein aracı.',
+      '🟢 <b>Dış Yeşil Halka (Öz Güçlerin):</b> 7 temel yerleşik araç + senin 6 özel uzmanlık becerin.'
+    ];
+    function setSun(i) {
+      document.getElementById('sunInfo').innerHTML = `<div class="p-2 rounded bg-slate-900 border border-slate-700">${sunTexts[i]}</div>`;
+    }
+
+    // #13 PCB
+    function setPcb(txt) {
+      document.getElementById('pcbOut').textContent = '⚡ ' + txt;
+    }
+
+    // #15 Terminal
+    function runTerm(clean) {
+      const box = document.getElementById('termBox');
+      if (clean) {
+        box.innerHTML = `
+          <div class="text-emerald-400">[00.001s] INPUT_RECEIVED ➔ Doğrudan modele iletildi</div>
+          <div class="text-emerald-300">[00.002s] ✅ HOOK_CHECK ➔ Gizli komutan baskısı KAPALI (0 ms)</div>
+          <div class="text-emerald-300">[00.005s] ✅ PLUGIN_CHECK ➔ 31 Biyoloji aracı KAPALI (%66 bellek açıldı)</div>
+          <div class="text-emerald-300">[00.010s] ✅ SKILLS_READY ➔ 7 Temel + 6 Özel Becerin Aktif</div>
+          <div class="text-sky-300 font-bold">[00.450s] 🚀 OUTPUT ➔ %100 Odaklı, Uzun ve Bizzat Çözüm Üretildi!</div>`;
+      } else {
+        box.innerHTML = `
+          <div class="text-emerald-400">[00.001s] INPUT_RECEIVED ➔ watcher.py (SQLite logged)</div>
+          <div class="text-rose-400">[00.014s] ⚠️ HOOK_PRE ➔ agy_fast_hook.py çalıştı!</div>
+          <div class="text-rose-300">[00.019s] 🚨 INJECT ➔ canli-anons.json ("İşi kendin yapma Codex'e ver!")</div>
+          <div class="text-amber-300">[00.045s] ⚠️ PLUGIN_LOAD ➔ science (31 Biyoloji/DNA aracı yüklendi)</div>
+          <div class="text-sky-300">[00.060s] 📜 RULE_LOAD ➔ GEMINI.md ("Max 8 madde, kısa kes")</div>
+          <div class="text-purple-300">[01.200s] 🤖 OUTPUT ➔ Kısıtlanmış özet yanıt üretildi.</div>`;
+      }
+    }
+
+    // #19 Python Tutor Stepper
+    let tStep = 0;
+    const tutorSteps = [
+      {
+        title: 'Adım 1 / 4: Mesajın belleğe alındı (Saf Hal)',
+        html: '<div class="text-emerald-300">prompt = "Bana sistemi anlat kanka"</div>'
+      },
+      {
+        title: 'Adım 2 / 4: agy_fast_hook.py araya girdi!',
+        html: '<div class="text-emerald-300">prompt = "Bana sistemi anlat kanka"</div><div class="text-rose-400">+ injected_anons = "Kotayı koru, ham ameleliği KENDİN YAPMA Codex\'e ver!"</div>'
+      },
+      {
+        title: 'Adım 3 / 4: config.json (31 Biyoloji) + GEMINI.md yüklendi!',
+        html: '<div class="text-emerald-300">prompt = "Bana sistemi anlat kanka"</div><div class="text-rose-400">+ injected_anons = "İşi kendin yapma Codex\'e ver!"</div><div class="text-amber-300">+ tools = [AlphaFold, ClinVar, UniProt, PyMOL ... x31 Biyoloji]</div><div class="text-sky-300">+ rules = "Max 8 madde, 1-3 cümle kısa yaz"</div>'
+      },
+      {
+        title: 'Adım 4 / 4: Model kısıtlanmış bellekle cevap üretti',
+        html: '<div class="text-purple-300 font-bold">return "Kısacası: ..." // Derin detaya girmeden kısa keser</div>'
+      }
+    ];
+    function stepTutor(dir) {
+      tStep = Math.max(0, Math.min(3, tStep + dir));
+      document.getElementById('tutorStepTitle').textContent = tutorSteps[tStep].title;
+      document.getElementById('tutorMem').innerHTML = tutorSteps[tStep].html;
+    }
+
+    // #20 Cockpit
+    function updateCockpit() {
+      const s1 = document.getElementById('sw1').checked;
+      const s2 = document.getElementById('sw2').checked;
+      const s3 = document.getElementById('sw3').checked;
+      let score = 100 - (s1 ? 20 : 0) - (s2 ? 25 : 0) - (s3 ? 10 : 0);
+      const scEl = document.getElementById('cockpitScore');
+      const barEl = document.getElementById('cockpitBar');
+      barEl.style.width = score + '%';
+      if (score >= 90) {
+        scEl.textContent = '%' + score + ' (🚀 Tam Güç!)';
+        scEl.className = 'text-sm font-extrabold text-emerald-400';
+        barEl.className = 'bg-emerald-500 h-full transition-all duration-300';
+      } else if (score >= 65) {
+        scEl.textContent = '%' + score + ' (⚡ Orta Güç)';
+        scEl.className = 'text-sm font-extrabold text-amber-400';
+        barEl.className = 'bg-amber-500 h-full transition-all duration-300';
+      } else {
+        scEl.textContent = '%' + score + ' (⚠️ Frenli)';
+        scEl.className = 'text-sm font-extrabold text-rose-400';
+        barEl.className = 'bg-rose-500 h-full transition-all duration-300';
+      }
+    }
+  </script>
+</body>
+</html>

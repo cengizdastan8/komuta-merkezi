@@ -1,0 +1,22 @@
+{
+  "demo": true,
+  "business": {
+    "name": "İşletme adınızı buraya yazın",
+    "description": "Bu müşteri vitrini örnek içerikle çalışır. Gerçek işletme bilgisi ciko-config.json dosyasından girilir.",
+    "phone": "",
+    "address": "",
+    "currency": "TRY",
+    "locale": "tr-TR"
+  },
+  "products": [
+    {"id": "ekmek", "name": "Ekşi mayalı somun", "description": "Örnek ürün; ad ve açıklamayı işletme bilgileriyle değiştirin.", "price": 95, "unit": "adet", "accent": "#d99043"},
+    {"id": "pogaca", "name": "Peynirli poğaça", "description": "Örnek ürün; fotoğraf veya müşteri yorumu içermez.", "price": 28, "unit": "adet", "accent": "#efb454"},
+    {"id": "tart", "name": "Mevsim meyveli tart", "description": "Örnek ürün; fiyat ve uygunluğu işletme belirler.", "price": 180, "unit": "adet", "accent": "#b8665b"}
+  ],
+  "extras": [
+    {"id": "susam", "name": "Susam kaplama", "price": 8},
+    {"id": "peynir", "name": "Ekstra peynir", "price": 18},
+    {"id": "hediye", "name": "Hediye kutusu", "price": 25}
+  ],
+  "trackingStatuses": ["Alındı (demo)", "Hazırlanıyor (demo)", "Teslime hazır (demo)", "Tamamlandı (demo)"]
+}

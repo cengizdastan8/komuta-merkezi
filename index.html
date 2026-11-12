@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+<title>📱 Mel — Mobil Komuta & Bitmiş İşler Vitrini</title>
+<style>
+  :root {
+    --bg: #070b14;
+    --card: #111827;
+    --card-hover: #1e293b;
+    --border: #1f2937;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --green: #10b981;
+    --blue: #38bdf8;
+    --purple: #a855f7;
+    --amber: #f59e0b;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    padding: 14px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  .container { max-width: 760px; margin: 0 auto; padding-bottom: 40px; }
+  .hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    margin-bottom: 8px;
+  }
+  h1 { margin: 0 0 6px 0; font-size: 21px; line-height: 1.25; }
+  .sub { margin: 0 0 14px 0; color: var(--muted); font-size: 14px; }
+  .hero-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #0284c7, #2563eb);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    border: 1px solid #38bdf8;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25);
+  }
+  .sec-title {
+    font-size: 16px;
+    font-weight: 800;
+    margin: 22px 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e2e8f0;
+  }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-title { font-size: 16px; font-weight: 700; color: #f1f5f9; margin: 0; }
+  .pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    background: #1e293b;
+    color: var(--blue);
+    border: 1px solid #334155;
+  }
+  .pill.apk { color: #34d399; border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); }
+  .card-desc { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+  .btn {
+    flex: 1;
+    min-width: 140px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    background: #1e293b;
+    color: #38bdf8;
+    border: 1px solid #334155;
+  }
+  .btn.green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.45);
+  }
+  .btn.purple {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.45);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="hero">
+    <div class="badge">✅ TELEFON & MOBİL ERİŞİM MERKEZİ</div>
+    <h1>📱 Mel — Bitmiş İşler & APK Vitrini</h1>
+    <p class="sub">Bilgisayardaki <code>localhost</code> veya <code>C:\</code> yollarına takılmadan, doğrudan telefonundan tek dokunuşla APK'ları indirip tüm interaktif panelleri açabilirsin.</p>
+    <a class="hero-btn" href="canli-takip-merkezi.html">📡 Tam Canlı Takip ve Komuta Radarı'nı Aç</a>
+  </div>
+
+  <div class="sec-title" id="apk-bolumu">📲 1. 5 Mobil Android Uygulaması (Doğrudan Telefona İndir & Kur)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🎵 1. Aura Music</h3>
+        <span class="pill apk">9.0 MB • arm64 APK</span>
+      </div>
+      <p class="card-desc">4 katmanlı özel Jetpack Compose mimarisiyle derlenmiş müzik ve ses deneyimi uygulaması.</p>
+      <div class="btn-row">
+        <a class="btn green" href="https://github.com/cengizdastan8/komuta-merkezi/releases/download/v1.0.0/AuraMusic-arm64.apk">⬇️ AuraMusic-arm64.apk İndir</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🌊 2. Kuroshio Studio (Tokyo)</h3>
+        <span class="pill apk">9.0 MB • arm64 APK</span>
+      </div>
+      <p class="card-desc">2 sütunlu kompakt kart mimarisi ve tasarım denetleyicisinden 0 blocker ile geçmiş stüdyo uygulaması.</p>
+      <div class="btn-row">
+        <a class="btn green" href="https://github.com/cengizdastan8/komuta-merkezi/releases/download/v1.0.0/KuroshioStudio-arm64.apk">⬇️ KuroshioStudio-arm64.apk İndir</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🏙️ 3. Anatolia Pulse (İstanbul)</h3>
+        <span class="pill apk">9.0 MB • arm64 APK</span>
+      </div>
+      <p class="card-desc">Türkiye/İstanbul müşteri paketi için özel tasarım tokenlarıyla derlenmiş Android uygulaması.</p>
+      <div class="btn-row">
+        <a class="btn green" href="https://github.com/cengizdastan8/komuta-merkezi/releases/download/v1.0.0/AnatoliaPulse-arm64.apk">⬇️ AnatoliaPulse-arm64.apk İndir</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🌙 4. Qamar Gulf Audio (Dubai/GCC)</h3>
+        <span class="pill apk">12.2 MB • arm64 APK</span>
+      </div>
+      <p class="card-desc">Körfez bölgesi müşteri paketi için geliştirilmiş özel ses/medya Android uygulaması.</p>
+      <div class="btn-row">
+        <a class="btn green" href="https://github.com/cengizdastan8/komuta-merkezi/releases/download/v1.0.0/QamarGulfAudio-arm64.apk">⬇️ QamarGulfAudio-arm64.apk İndir</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">💳 5. VaultPay Global (ABD/İngiltere)</h3>
+        <span class="pill apk">10.2 MB • arm64 APK</span>
+      </div>
+      <p class="card-desc">Global fintech ve cüzdan müşteri paketi için Sıfır-Default Compose şablonuyla derlenmiş APK.</p>
+      <div class="btn-row">
+        <a class="btn green" href="https://github.com/cengizdastan8/komuta-merkezi/releases/download/v1.0.0/VaultPayGlobal-arm64.apk">⬇️ VaultPayGlobal-arm64.apk İndir</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">🖥️ 2. İnteraktif HTML Paneller & Simülatörler (Telefonda Aç)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">📈 33 Quant Trading Bot Canlı Komuta Panosu</h3>
+        <span class="pill">33/33 PASS</span>
+      </div>
+      <p class="card-desc">7 katmanlı boru hattı, Equity Curve, Drawdown, Kelly & VPIN simülatörü ve 33 algoritmik modülün canlı telemetri kartları.</p>
+      <div class="btn-row">
+        <a class="btn" href="vitrin/canli-trading-komuta-panosu.html">🚀 Trading Panosunu Aç</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🏢 Çiko 3D Web & Otomatik Ajans NEXUS</h3>
+        <span class="pill">2 Canlı Web Demo</span>
+      </div>
+      <p class="card-desc">3 modlu Çiko 3D WebGL/Katalog vitrini ve Otomatik Ajans NEXUS müşteri teklif/sipariş/revizyon sistemi.</p>
+      <div class="btn-row">
+        <a class="btn" href="vitrin/ciko-3d-web/index.html">🧊 Çiko 3D Web</a>
+        <a class="btn purple" href="vitrin/otomatik-ajans-nexus/index.html">⚡ NEXUS Ajans</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">👁️ Binoküler Göz Resetleme & Işık/PWM Çözümü</h3>
+        <span class="pill">İnteraktif Test + Atlas</span>
+      </div>
+      <p class="card-desc">Ekran, TV ve LED araba farı ışık hassasiyeti / göz-kafa yorgunluğu için binoküler egzersiz aracı ve kök neden atlası.</p>
+      <div class="btn-row">
+        <a class="btn" href="vitrin/binokuler-goz-reset.html">👁️ Göz Reset Aracını Aç</a>
+        <a class="btn purple" href="raporlar/isik-goz-kafa-kok-neden-atlasi.html">📄 Kök Neden Atlası</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🚶‍♂️ Kaldırım & Yaya Sosyolojisi Taktik Simülatörü</h3>
+        <span class="pill">4 Senaryo Simülatörü</span>
+      </div>
+      <p class="card-desc">Sağ şerit kuralı, Target Fixation ve tartışmadan 3 saniyede koridor açma (Horizon Gaze & Omuz Vektörü) simülatörü.</p>
+      <div class="btn-row">
+        <a class="btn" href="vitrin/kaldirim-sosyolojisi.html">🎮 Simülatörü Aç</a>
+        <a class="btn purple" href="raporlar/kaldirim-sosyolojisi-raporu.html">📄 Forum Analizi</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🔧 AGY Kaput Altı Sanayi Ustası & 20 HTML Vitrini</h3>
+        <span class="pill">4 Görsel Rehber</span>
+      </div>
+      <p class="card-desc">Antigravity iç mimarisi sanayi ustası rehberi, tam sistem/kod röntgeni, 20 HTML koleksiyonu ve n8n akan tuval.</p>
+      <div class="btn-row">
+        <a class="btn" href="vitrin/sanayi-ustasi-kaput-alti.html">🔧 Sanayi Ustası</a>
+        <a class="btn" href="vitrin/tam-sistem-ve-kod-rontgeni.html">🧬 Kod Röntgeni</a>
+      </div>
+      <div class="btn-row">
+        <a class="btn purple" href="vitrin/20-html-gosterim-koleksiyonu.html">🎨 20 HTML Vitrini</a>
+        <a class="btn purple" href="vitrin/antigravity-n8n-canvas.html">🕸️ n8n Canvas</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title">📄 3. Sentez & Denetim Raporları (Mobil Okuma Modu)</div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">🧠 6'lı Ordu — 1.000 Transkript & Tek Beyin C Motoru</h3>
+        <span class="pill">Sentez & Mimari</span>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="raporlar/6li-ordu-sentez-raporu.html">📘 6'lı Ordu Sentez Raporu</a>
+        <a class="btn purple" href="raporlar/tek-beyin-c-motoru-raporu.html">⚙️ C Motoru Paketi</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-top">
+        <h3 class="card-title">👮‍♂️ Baş Denetçi Onay Raporu & Sistem Diyaloğu</h3>
+        <span class="pill">10/10 Denetim</span>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="raporlar/bas-denetci-raporu.html">👮‍♂️ Baş Denetçi Raporu</a>
+        <a class="btn purple" href="raporlar/sistem-toparlama-diyalog.html">💬 Sistem Diyalog</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

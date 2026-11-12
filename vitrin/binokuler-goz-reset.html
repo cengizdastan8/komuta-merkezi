@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kafa-Göz Pert Olma Sendromu: Kök Neden Testi & 30 Sn Okülomotor Reset</title>
+  <style>
+    /* Sıfır Halation (Işık Halesi Yok) - Sıcak Kağıt / E-Ink Paleti */
+    :root {
+      --bg: #ece3ce;
+      --card: #e3d7bd;
+      --border: #c5b697;
+      --text: #2c261e;
+      --muted: #5a4f40;
+      --accent: #3d6b52; /* 530nm Sakinleştirici Dar Bant Yeşil Tonu */
+      --warn: #8c4a27;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65;
+      max-width: 960px;
+      margin-inline: auto;
+    }
+    h1, h2, h3 { color: #1f1a14; margin-top: 0; }
+    .banner {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 22px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #f6f1e5;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .badge.warn { background: var(--warn); }
+    button {
+      background: var(--accent);
+      color: #f6f1e5;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.96rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { opacity: 0.92; }
+    .test-box {
+      background: #dfd2b5;
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-top: 12px;
+    }
+    .BrockString {
+      position: relative;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      margin: 16px 0;
+    }
+    .BrockString::before {
+      content: "";
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      height: 4px;
+      background: #7a6c55;
+      z-index: 1;
+    }
+    .bead {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #f5efe2;
+      transition: transform 0.25s ease;
+    }
+    .bead.b1 { background: #8c4a27; }
+    .bead.b2 { background: #3d6b52; }
+    .bead.b3 { background: #3f5866; }
+    .bead.active { transform: scale(1.38); outline: 4px solid #2c261e; }
+    .checklist label {
+      display: block;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      background: #dfd2b5;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #sonucKutusu {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #d6e2d9;
+      border: 1px solid var(--accent);
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="banner">
+    <span class="badge">Göz Yormayan E-Ink / Sıcak Kağıt Paleti (#ECE3CE)</span>
+    <h1>🔬 Ekran, Işık ve Far Sonrası "Kafa-Göz Pert Olma / Konuşamama" Tanı & Reset Masası</h1>
+    <p>
+      Bu sayfa göz bebeğini büyütmemek ve <strong>480 nm Melanopsin / Trigeminal</strong> ağrı yolunu tetiklememek için
+      <strong>sıfır parlak beyaz</strong> ve <strong>sıfır karanlık mod halesi (halation)</strong> ile tasarlanmıştır.
+    </p>
+  </div>
+
+  <h2>1. 60 Saniyede Evde Kendi Kendine 3 Kök Neden Testi</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="badge warn">Test 1: Tek Göz Kapama (BVD / Gizli Kayma)</span>
+      <h3>Nasıl Yapılır?</h3>
+      <p>
+        Ekran karşısında kafan ve gözün pert olduğunda veya arkadaşınla konuşurken gözlerin yere bakmak istediğinde
+        <strong>sol elinle sol gözünü tamamen kapat</strong> (gözünü kısmadan, avuç içinde açık kalsın) ve 60 saniye ekrana tek gözle bak. Sonra sağ gözünü kapatıp dene.
+      </p>
+      <p><strong>Sonuç:</strong> Tek gözünü kapattığında beynindeki baskı, sersemlik veya göz kasındaki çekilme <strong>anında %50+ rahatlıyorsa</strong>, sorunun 1 numaralı kök nedeni <strong>Binoküler Görme Bozukluğu (Gizli Kayma / Heterofori / Konverjans Yetmezliği)</strong>'dir!</p>
+    </div>
+
+    <div class="card">
+      <span class="badge warn">Test 2: Telefon Kamerası Enstantane (PWM Flicker)</span>
+      <h3>Nasıl Yapılır?</h3>
+      <p>
+        Telefonunun kamerasını aç, varsa <strong>Pro / Manuel Video</strong> moduna veya <strong>Ağır Çekim (Slow-Mo 240 fps)</strong> moduna al.
+        Enstantane hızını <code>1/2000</code> veya <code>1/4000</code> yapıp şu an `%10` parlaklıkta duran laptop ekranına ve odadaki lambaya tut.
+      </p>
+      <p><strong>Sonuç:</strong> Ekranda kayan siyah şeritler veya pırpır eden dalgalar görüyorsan, ekranın `%10` parlaklıkta <strong>ağır PWM darbe (strobe)</strong> modundadır.</p>
+    </div>
+
+    <div class="card">
+      <span class="badge">Test 3: Sırtüstü C1-C2 Boyun / Göz Bebeği Testi</span>
+      <h3>Nasıl Yapılır?</h3>
+      <p>
+        Kafan ve gözün ekran sonrası kilitlendiğinde yatağa <strong>yastıksız düz sırtüstü uzan</strong>, başını sağa-sola çevirmeden çeneni çok hafif içeri al ve 5 dakika tavanın sabit bir noktasına bak.
+      </p>
+      <p><strong>Sonuç:</strong> 5 dakikada gözünün arkasındaki basınç ve ışık hassasiyeti açılıyorsa, otururken <strong>C1-C2 Üst Boyun Sempatik Gangliyonu</strong> göz bebeğini açık bırakıyor ve Jugular toplardamar akışını yavaşlatıyordur.</p>
+    </div>
+  </div>
+
+  <h2>2. Hangi Çözüm Sana En Yüksek Kaldıracı Verir? (İnteraktif Etkileşim)</h2>
+  <div class="card checklist">
+    <p>Sendeki belirtilerden şu an en baskın olanları işaretle:</p>
+    <label><input type="checkbox" class="sym" value="bvd" checked /> Arkadaşımla otururken göz göze gelemiyorum, göz kaslarım yere bakmak istiyor, konuşacak halim kalmıyor</label>
+    <label><input type="checkbox" class="sym" value="iprgc" checked /> Araba farları, floresanlar ve ekran ışığı gözümün içine bıçak gibi giriyor (güneşe 10 sn bakmışım gibi)</label>
+    <label><input type="checkbox" class="sym" value="pwm" checked /> Şeffaf mavi ışık gözlüğü hiçbir işe yaramadı; kitap/inşaat yorgunluğu geçiyor ama ekran yorgunluğu geçmiyor</label>
+    <label><input type="checkbox" class="sym" value="neck" /> Saatlerce oturup kalktıktan sonra dışarı çıkınca kafam-gözüm mal gibi kilitlenmiş oluyor</label>
+    <button onclick="hesapla()">Kişisel Çözüm Reçetemi Çıkar</button>
+    <div id="sonucKutusu"></div>
+  </div>
+
+  <h2 style="margin-top:24px;">3. 30 Saniyelik Dijital Brock İpi / Vergens Kas Gevşetici (Scott Tucker Protokolü)</h2>
+  <div class="card">
+    <p>
+      Ekran başında kilitlenen <strong>siliyer (odak)</strong> ve <strong>iç rektus (yakınlaştırma)</strong> kaslarını çözmek için
+      aşağıdaki düğmeye bas ve 30 saniye boyunca yanan boncuğu takip ederken <strong>tam göz kırpma (üst ve alt kapak birbirine değecek)</strong> yap:
+    </p>
+    <div class="test-box">
+      <div class="BrockString">
+        <div id="bead1" class="bead b1 active">1</div>
+        <div id="bead2" class="bead b2">2</div>
+        <div id="bead3" class="bead b3">3</div>
+      </div>
+      <div id="stepText" style="font-weight:600; margin-bottom:10px;">Hazır: Başlat'a basınca 1 -> 2 -> 3 -> Pencereden En Uzak Nokta döngüsü başlar.</div>
+      <button onclick="baslatEgzersiz()">30 Saniyelik Göz Kası Resetini Başlat</button>
+    </div>
+  </div>
+
+  <script>
+    function hesapla() {
+      const checked = Array.from(document.querySelectorAll('.sym:checked')).map(el => el.value);
+      const box = document.getElementById('sonucKutusu');
+      let html = '<h3>🎯 Senin İçin Doğrulanmış 4 Adımlı Kurtuluş Planı:</h3><ol>';
+      if (checked.includes('pwm')) {
+        html += '<li><strong>Hemen Şimdi (Sıfır-PWM Ayarı):</strong> Bilgisayarının donanım parlaklığı şu an <code>%10</code>! Donanım parlaklığını <code>%80-100</code> seviyesine çıkarıp karartmayı hazırladığımız <code>sifir_pwm_ekran_kalkani.py</code> ile piksel seviyesinde yap (veya Dark Mode yerine bu sayfadaki Sıcak Kağıt <code>#ECE3CE</code> temasını kullan).</li>';
+      }
+      if (checked.includes('bvd')) {
+        html += '<li><strong>Standart Gözlükçüye Değil, Şaşılık / Binoküler Görme Uzmanına Git:</strong> Muayenede <em>"Uzağı net görüyorum ama ekranda ve göz temasında gözlerim kilitleniyor; lütfen <strong>Gizli Kayma (Heterofori / Maddox Rod)</strong>, <strong>Konverjans Yetmezliği (NPC)</strong> ve <strong>0.25-0.50 Silindirik Astigmat Aksı</strong> ölçümü yapın, gerekiyorsa <strong>Mikro-Prizmalı (Base-In Prism) veya Yakın Destekli (+0.50 Add)</strong> cam değerlendirin"</em> de.</li>';
+      }
+      if (checked.includes('iprgc')) {
+        html += '<li><strong>Şeffaf Cam Yerine Gerçek 480nm Kesici (FL-41 / Avulux):</strong> Floresan ve ekranlar için şeffaf Blue-Cut değil, Trigeminal siniri koruyan <strong>%25-%50 FL-41 (Gül Kurusu/Kehribar)</strong> cam; gece araba farları için ise göz bebeğini büyütmeyen açık sarı/kehribar <strong>DriveSafe</strong> kaplama + far gelince <strong>sağ şerit çizgisine bakma</strong> tekniği kullan.</li>';
+      }
+      if (checked.includes('neck')) {
+        html += '<li><strong>Otururken C1-C2 Boyun Açısı:</strong> Ekranın üst kenarını tam göz hizana kaldır; boynun öne eğildiğinde C2 önündeki sempatik gangliyon göz bebeğini büyütüp ışığa karşı savunmasız bırakır.</li>';
+      }
+      html += '</ol>';
+      box.innerHTML = html;
+      box.style.display = 'block';
+    }
+
+    let timer = null;
+    function baslatEgzersiz() {
+      if (timer) clearInterval(timer);
+      const steps = [
+        { id: 'bead1', text: '1. Boncuk (Yakın Odak): Tam göz kırp ve 5 sn buraya odaklan...' },
+        { id: 'bead2', text: '2. Boncuk (Orta Odak): Omuzlarını düşür, nefes ver ve 5 sn buraya bak...' },
+        { id: 'bead3', text: '3. Boncuk (Geçiş Odağı): Göz kaslarını gevşet, 5 sn buraya bak...' },
+        { id: null, text: '🌲 ŞİMDİ EKRANDAN KALK: Odadaki veya penceredeki EN UZAK noktaya 10 sn bak ve 3 kez tam göz kırp!' }
+      ];
+      let idx = 0;
+      const runStep = () => {
+        ['bead1', 'bead2', 'bead3'].forEach(b => document.getElementById(b).classList.remove('active'));
+        if (idx >= steps.length) {
+          document.getElementById('stepText').textContent = '✅ 30 Saniyelik Okülomotor Reset Tamamlandı!';
+          clearInterval(timer);
+          timer = null;
+          return;
+        }
+        const st = steps[idx];
+        if (st.id) document.getElementById(st.id).classList.add('active');
+        document.getElementById('stepText').textContent = st.text;
+        idx++;
+      };
+      runStep();
+      timer = setInterval(runStep, 5000);
+    }
+  </script>
+</body>
+</html>
